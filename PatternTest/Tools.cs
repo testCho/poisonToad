@@ -13,8 +13,7 @@ namespace patternTest
         {
             Vector3d rotatedVector = new Vector3d(baseVector.X * Math.Cos(angle) - baseVector.Y * Math.Sin(angle), baseVector.X * Math.Sin(angle) + baseVector.Y * Math.Cos(angle), 0);
             return rotatedVector;
-        }
-
+        }     
     }
 
     class PolylineTools
@@ -158,71 +157,6 @@ namespace patternTest
             return final;
         }
 
-        public static Polyline RegionIntersect(Polyline polyline1, Polyline polyline2)
-        {
-            Polyline resultPolyine = new Polyline();
-
-            List<double> tempParamA = new List<double>(); //Polyline1 위의 교차점
-            List<double> tempParamB = new List<double>(); //Polyline1 위의 교차점
-            Curve polyCurve1 = polyline1.ToNurbsCurve();
-            Curve polyCurve2 = polyline2.ToNurbsCurve();
-
-            List<Curve> tempLocalResult = new List<Curve>();
-
-            var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(polyCurve1, polyCurve2, 0, 0);
-            foreach (var i in tempIntersection)
-            {
-                tempParamA.Add(i.ParameterA);
-                tempParamB.Add(i.ParameterB);
-            }
-
-            List<Curve> tempSplittedA = polyCurve1.Split(tempParamA).ToList();
-            List<Curve> tempSplittedB = polyCurve2.Split(tempParamB).ToList();
-
-            //case of Polyline1
-            foreach (Curve i in tempSplittedA)
-            {
-                List<Curve> testCrvSet = i.DuplicateSegments().ToList();
-
-                if (testCrvSet.Count == 0)
-                    testCrvSet.Add(i);
-
-                foreach (Curve j in testCrvSet)
-                {
-                    Point3d testPt = new Point3d((j.PointAtEnd + j.PointAtStart) / 2);
-                    int decider = (int)polyCurve2.Contains(testPt);
-
-                    if (decider != 2)
-                        tempLocalResult.Add(j);
-                }
-            }
-
-            //case of Polyline2
-            foreach (Curve i in tempSplittedB)
-            {
-                List<Curve> testCrvSet = i.DuplicateSegments().ToList();
-
-                if (testCrvSet.Count == 0)
-                    testCrvSet.Add(i);
-
-                foreach (Curve j in testCrvSet)
-                {
-                    Point3d testPt = new Point3d((j.PointAtEnd + j.PointAtStart) / 2);
-                    int decider = (int)polyCurve1.Contains(testPt);
-
-                    if (decider != 2)
-                        tempLocalResult.Add(j);
-                }
-            }
-            List<Curve> resultList = Curve.JoinCurves(tempLocalResult).ToList();
-            resultList.OrderByDescending(i => CurveTools.GetArea(i));
-
-            if (resultList.Count != 0)
-                resultPolyine = CurveTools.ToPolyline(resultList[0]);
-
-            return resultPolyine;
-        }
-
         /// <summary>
         /// 폴리라인의 각 변마다 거리를 지정해 Offset 커브를 만들어줍니다.
         /// </summary>
@@ -316,68 +250,6 @@ namespace patternTest
             Polyline output = new Polyline();
             curve.TryGetPolyline(out output);
             return output;
-        }
-
-        public static List<Curve> RegionIntersect(List<Curve> curveSet1, List<Curve> curveSet2)
-        {
-            List<Curve> IntersectCrvs = new List<Curve>();
-            foreach (Curve i in curveSet1)
-            {
-                foreach (Curve j in curveSet2)
-                {
-                    List<double> tempParamA = new List<double>();
-                    List<double> tempParamB = new List<double>();
-                    List<Curve> tempLocalResult = new List<Curve>();
-
-                    var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(i, j, 0, 0);
-                    foreach (var k in tempIntersection)
-                    {
-                        tempParamA.Add(k.ParameterA);
-                        tempParamB.Add(k.ParameterB);
-                    }
-
-                    List<Curve> tempSplittedA = i.Split(tempParamA).ToList();
-                    List<Curve> tempSplittedB = j.Split(tempParamB).ToList();
-
-                    //case of Curve1
-                    foreach (Curve k in tempSplittedA)
-                    {
-                        List<Curve> testCrvSet = k.DuplicateSegments().ToList();
-
-                        if (testCrvSet.Count == 0)
-                            testCrvSet.Add(k);
-
-                        foreach (Curve l in testCrvSet)
-                        {
-                            Point3d testPt = new Point3d((l.PointAtEnd + l.PointAtStart) / 2);
-                            int decider = (int)j.Contains(testPt);
-
-                            if (decider != 2)
-                                tempLocalResult.Add(l);
-                        }
-                    }
-
-                    //case of Curve2
-                    foreach (Curve k in tempSplittedB)
-                    {
-                        List<Curve> testCrvSet = k.DuplicateSegments().ToList();
-
-                        if (testCrvSet.Count == 0)
-                            testCrvSet.Add(k);
-
-                        foreach (Curve l in testCrvSet)
-                        {
-                            Point3d testPt = new Point3d((l.PointAtEnd + l.PointAtStart) / 2);
-                            int decider = (int)i.Contains(testPt);
-
-                            if (decider != 2)
-                                tempLocalResult.Add(l);
-                        }
-                    }
-                    IntersectCrvs.AddRange(Curve.JoinCurves(tempLocalResult).ToList());
-                }
-            }
-            return IntersectCrvs;
         }
 
     }
@@ -848,6 +720,136 @@ namespace patternTest
             output = new Line(basePt, intersectedPts[0]);
 
             return output;
+        }
+    }
+
+    class CCXTools
+    {
+        public static Polyline RegionIntersect(Polyline polyline1, Polyline polyline2)
+        {
+            Polyline resultPolyine = new Polyline();
+
+            List<double> tempParamA = new List<double>(); //Polyline1 위의 교차점
+            List<double> tempParamB = new List<double>(); //Polyline1 위의 교차점
+            Curve polyCurve1 = polyline1.ToNurbsCurve();
+            Curve polyCurve2 = polyline2.ToNurbsCurve();
+
+            List<Curve> tempLocalResult = new List<Curve>();
+
+            var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(polyCurve1, polyCurve2, 0, 0);
+            foreach (var i in tempIntersection)
+            {
+                tempParamA.Add(i.ParameterA);
+                tempParamB.Add(i.ParameterB);
+            }
+
+            List<Curve> tempSplittedA = polyCurve1.Split(tempParamA).ToList();
+            List<Curve> tempSplittedB = polyCurve2.Split(tempParamB).ToList();
+
+            //case of Polyline1
+            foreach (Curve i in tempSplittedA)
+            {
+                List<Curve> testCrvSet = i.DuplicateSegments().ToList();
+
+                if (testCrvSet.Count == 0)
+                    testCrvSet.Add(i);
+
+                foreach (Curve j in testCrvSet)
+                {
+                    Point3d testPt = new Point3d((j.PointAtEnd + j.PointAtStart) / 2);
+                    int decider = (int)polyCurve2.Contains(testPt);
+
+                    if (decider != 2)
+                        tempLocalResult.Add(j);
+                }
+            }
+
+            //case of Polyline2
+            foreach (Curve i in tempSplittedB)
+            {
+                List<Curve> testCrvSet = i.DuplicateSegments().ToList();
+
+                if (testCrvSet.Count == 0)
+                    testCrvSet.Add(i);
+
+                foreach (Curve j in testCrvSet)
+                {
+                    Point3d testPt = new Point3d((j.PointAtEnd + j.PointAtStart) / 2);
+                    int decider = (int)polyCurve1.Contains(testPt);
+
+                    if (decider != 2)
+                        tempLocalResult.Add(j);
+                }
+            }
+            List<Curve> resultList = Curve.JoinCurves(tempLocalResult).ToList();
+            resultList.OrderByDescending(i => CurveTools.GetArea(i));
+
+            if (resultList.Count != 0)
+                resultPolyine = CurveTools.ToPolyline(resultList[0]);
+
+            return resultPolyine;
+        }
+
+        public static List<Curve> RegionIntersect(List<Curve> curveSet1, List<Curve> curveSet2)
+        {
+            List<Curve> IntersectCrvs = new List<Curve>();
+            foreach (Curve i in curveSet1)
+            {
+                foreach (Curve j in curveSet2)
+                {
+                    List<double> tempParamA = new List<double>();
+                    List<double> tempParamB = new List<double>();
+                    List<Curve> tempLocalResult = new List<Curve>();
+
+                    var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(i, j, 0, 0);
+                    foreach (var k in tempIntersection)
+                    {
+                        tempParamA.Add(k.ParameterA);
+                        tempParamB.Add(k.ParameterB);
+                    }
+
+                    List<Curve> tempSplittedA = i.Split(tempParamA).ToList();
+                    List<Curve> tempSplittedB = j.Split(tempParamB).ToList();
+
+                    //case of Curve1
+                    foreach (Curve k in tempSplittedA)
+                    {
+                        List<Curve> testCrvSet = k.DuplicateSegments().ToList();
+
+                        if (testCrvSet.Count == 0)
+                            testCrvSet.Add(k);
+
+                        foreach (Curve l in testCrvSet)
+                        {
+                            Point3d testPt = new Point3d((l.PointAtEnd + l.PointAtStart) / 2);
+                            int decider = (int)j.Contains(testPt);
+
+                            if (decider != 2)
+                                tempLocalResult.Add(l);
+                        }
+                    }
+
+                    //case of Curve2
+                    foreach (Curve k in tempSplittedB)
+                    {
+                        List<Curve> testCrvSet = k.DuplicateSegments().ToList();
+
+                        if (testCrvSet.Count == 0)
+                            testCrvSet.Add(k);
+
+                        foreach (Curve l in testCrvSet)
+                        {
+                            Point3d testPt = new Point3d((l.PointAtEnd + l.PointAtStart) / 2);
+                            int decider = (int)i.Contains(testPt);
+
+                            if (decider != 2)
+                                tempLocalResult.Add(l);
+                        }
+                    }
+                    IntersectCrvs.AddRange(Curve.JoinCurves(tempLocalResult).ToList());
+                }
+            }
+            return IntersectCrvs;
         }
     }
 }

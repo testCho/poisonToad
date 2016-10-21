@@ -118,5 +118,92 @@ namespace patternTest
             return anchor3;
         }
 
+        public List<Polyline> DrawRoomDivider(int numOfRoom, Polyline outline, List<Point3d> anchors, List<Line> mainAxis, List<double> dividerParams)
+        {
+            List<Polyline> dividers = new List<Polyline>();
+
+            return dividers;
+        }
+
+        public Polyline DrawFirstDivider(Point3d anchor1, Point3d hLimitPt, Polyline outline, List<Line> mainAxis, double hFactor, double vFactor, double scale)
+        {
+            Polyline firstDivider = new Polyline();
+
+            Plane basePln = new Plane(anchor1, mainAxis[0].UnitTangent, -mainAxis[1].UnitTangent);
+            Point3d anchor1Copy = new Point3d(anchor1) + basePln.XAxis * 600 / scale + basePln.YAxis * 600 / scale;
+            Point3d limitPtCopy = new Point3d(hLimitPt);
+            Polyline outlineCopy = new Polyline(outline);
+
+            //transform coordinate
+            outlineCopy.Transform(Transform.ChangeBasis(Plane.WorldXY, basePln));
+            anchor1Copy.Transform(Transform.ChangeBasis(Plane.WorldXY, basePln));
+            limitPtCopy.Transform(Transform.ChangeBasis(Plane.WorldXY, basePln));
+
+            //set horizontal limit
+            double hLimit = new double();
+            hLimit = limitPtCopy.X - anchor1Copy.X;
+
+            //set negative vertical limit //temp
+            double vLimitBelow = new double();
+            vLimitBelow = anchor1Copy.Y - hLimitPt.Y;
+
+            //set positive vertical limit
+            double vLimit = new double();
+
+            Point3d newAnchor1 = anchor1Copy + Vector3d.XAxis * hLimit * hFactor;
+
+            Line limitDecider1 = PCXTools.ExtendFromPt(anchor1Copy, outlineCopy, Vector3d.YAxis);
+            Line limitDecider2 = PCXTools.ExtendFromPt(newAnchor1, outlineCopy, Vector3d.YAxis);
+
+            List<Point3d> vLimitCandidate = new List<Point3d>();
+            List<Point3d> vLimitRunner = PolylineTools.GetVertex(outlineCopy);
+
+            vLimitCandidate.Add(limitDecider1.PointAt(1));
+            vLimitCandidate.Add(limitDecider2.PointAt(1));
+            vLimitCandidate.Sort((x, y) => x.X.CompareTo(y.X));
+
+            foreach (Point3d i in vLimitRunner)
+            {
+                if ((i.X > vLimitCandidate[0].X) && (i.X < vLimitCandidate[1].X) && (i.Y > anchor1Copy.Y))
+                    vLimitCandidate.Add(i);
+            }
+
+            vLimitCandidate.Sort((x, y) => x.Y.CompareTo(y.Y));
+            vLimit = vLimitCandidate[0].Y - anchor1Copy.Y;
+
+            //draw new anchor and dividing line
+            List<Point3d> dividingVertex = new List<Point3d>();
+            anchor1Copy.Transform(Transform.ChangeBasis(basePln, Plane.WorldXY));
+            limitDecider2.Transform(Transform.ChangeBasis(basePln, Plane.WorldXY));
+
+            Point3d firstAnchor1 = anchor1Copy + basePln.YAxis * vLimit * vFactor;
+            Point3d firstAnchor2 = anchor1Copy + basePln.XAxis * hLimit * hFactor + basePln.YAxis * vLimit * vFactor;
+
+
+
+            dividingVertex.Add(anchor1Copy);
+            dividingVertex.Add(firstAnchor1);
+            dividingVertex.Add(firstAnchor2);
+            dividingVertex.Add(limitDecider2.PointAt(1));
+
+            firstDivider = new Polyline(dividingVertex);
+
+            return firstDivider;
+        }
+
+        public Polyline DrawLastDivider(Point3d anchor3, Point3d hLimitPt, Polyline outline, List<Line> mainAxis, double hFactor, double scale)
+        {
+            Polyline lastDivider = new Polyline();
+            
+
+            return lastDivider;
+        }
+
+        public Polyline DrawMidDivider(List<Point3d> dividerLimit, Polyline outline, List<Line> mainAxis, double hFactor, double vFactor)
+        {
+            Polyline midDivider = new Polyline();
+            return midDivider;
+        }       
+
     }
 }
