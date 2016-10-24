@@ -16,6 +16,25 @@ namespace patternTest
         }     
     }
 
+    class RectangleTools
+    {
+        public static Rectangle3d DrawP2PRect(Point3d pointStart, Point3d pointEnd, double thickness)
+        {
+            Rectangle3d p2pRect = new Rectangle3d();
+
+            Vector3d alignP2P = new Line(pointStart, pointEnd).UnitTangent;
+            Vector3d perpP2P = VectorTools.RotateVectorXY(alignP2P, Math.PI / 2);
+
+            Point3d corner1 = pointStart - alignP2P * thickness / 2 + perpP2P * thickness / 2;
+            Point3d corner2 = pointEnd + alignP2P * thickness / 2 - perpP2P * thickness / 2;
+            Plane p2pPlane = new Plane(pointStart, alignP2P, perpP2P);
+
+            p2pRect = new Rectangle3d(p2pPlane, corner1, corner2);
+
+            return p2pRect;
+        }
+    }
+
     class PolylineTools
     {
         public static double GetArea(Polyline input)
