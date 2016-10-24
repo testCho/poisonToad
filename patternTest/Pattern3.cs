@@ -80,6 +80,7 @@ namespace patternTest
 
         public List<Point3d> DrawAnchor1(Vector3d upstairDirec, Line baseLine, List<Line> mainAxis, double vFactor, double scale)
         {
+            //for commit test
             List<Point3d> anchor = new List<Point3d>();
 
             double vLimitLower = 3900/scale - mainAxis[1].Length;
@@ -91,7 +92,7 @@ namespace patternTest
 
    
             Point3d basePt = mainAxis[0].PointAt(0);
-
+            
             return anchor;
         }
 
