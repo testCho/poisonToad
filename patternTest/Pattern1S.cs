@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern1HRefac
+    class Pattern1S
     {
         public Line SearchBaseLine(Polyline landing, Vector3d upstairDirec)
         {

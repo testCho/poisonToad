@@ -44,8 +44,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Pattern1HRefac.cs" />
-    <Compile Include="Pattern3.cs" />
+    <Compile Include="Pattern1S.cs" />
+    <Compile Include="Pattern2S.cs" />
+    <Compile Include="Pattern3D.cs" />
+    <Compile Include="Pattern4S.cs" />
     <Compile Include="patternTestCommand.cs" />
     <Compile Include="patternTestPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

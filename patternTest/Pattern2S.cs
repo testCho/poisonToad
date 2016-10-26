@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern3
+    class Pattern2S
     {
         public Line SearchBaseLine(Polyline landing, Vector3d upstairDirec)
         {
@@ -54,7 +54,7 @@ namespace patternTest
             List<Line> mainAxis = new List<Line>();
 
             //process
-            Point3d basePt = baseLine.PointAt(0.5) - (upstairDirec / upstairDirec.Length) * (900 / scale);
+            Point3d basePt = baseLine.PointAt(0.5) - (upstairDirec / upstairDirec.Length) * (600 / scale);
 
             //set horizontalAxis, 횡축은 외곽선에서 더 먼 쪽을 선택
             Line horizonReached1 = PCXTools.ExtendFromPt(basePt, outline, baseLine.UnitTangent);
@@ -78,39 +78,16 @@ namespace patternTest
 
         }
 
-        public List<Point3d> DrawAnchor1(Vector3d upstairDirec, Line baseLine, List<Line> mainAxis, double vFactor, double scale)
+        public Point3d DrawAnchor1(Vector3d upstairDirec, Line baseLine, List<Line> mainAxis, double scale)
         {
-            //for commit test
-            List<Point3d> anchor = new List<Point3d>();
+            Point3d anchor = new Point3d();
 
-            double vLimitLower = 3900/scale - mainAxis[1].Length;
-            double vLimitUpper = 900/scale;
-            double vLimit = vLimitUpper - vLimitLower;
-
-            if (vLimit<0)
-                return null;
-
-   
             Point3d basePt = mainAxis[0].PointAt(0);
-            
+            Point3d anchorCenter = basePt + mainAxis[0].UnitTangent * (baseLine.Length / 2.0 + 600 / scale);
+            anchor = anchorCenter; //임시
+
             return anchor;
         }
 
-        public Point3d DrawAnchor2(Point3d anchor1, Polyline coreLine, Polyline outline, List<Line> mainAxis, double scale, double lengthFactor)
-        {
-            Point3d anchor2 = new Point3d();
-
-            Point3d anchor2Center = new Point3d();
-            double anchorLineLength = PCXTools.ExtendFromPt(mainAxis[1].PointAt(0), coreLine, mainAxis[1].UnitTangent).Length;
-
-            if (anchorLineLength < mainAxis[1].Length)
-                anchor2Center = anchor1 + mainAxis[1].UnitTangent * (anchorLineLength - 600 / scale) * lengthFactor;
-            else
-                anchor2Center = anchor1 + mainAxis[1].UnitTangent * (mainAxis[1].Length - 600 / scale) * lengthFactor;
-
-            anchor2 = anchor2Center; //임시
-
-            return anchor2;
-        }
     }
 }
