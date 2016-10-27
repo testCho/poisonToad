@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern4S
+    class Pattern4S //이거 진짜 병신...--;
     {
         public Line SearchBaseLine(Polyline landing, Vector3d upstairDirec)
         {
@@ -97,7 +97,7 @@ namespace patternTest
 
         }
 
-        public Point3d DrawAnchor1(Polyline outline, Polyline coreLine, Vector3d upstairDirec, Line baseLine, List<Line> baseAxis, double corridorWidth, double scale)
+        public Point3d DrawAnchor1(Polyline outline, Polyline coreLine, Vector3d upstairDirec, Line baseLine, List<Line> baseAxis, double corridorWidth, double scale, out double subLength)
         {
             Point3d anchor1 = new Point3d();
 
@@ -115,13 +115,14 @@ namespace patternTest
 
             anchor1 = anchorBase + vAxis * (subCorridorWidth / 2 - landingSideLength) + hAxis * (halfHLength + scaledCorridorWidth / 2);
 
+            subLength = subCorridorWidth;
             return anchor1;
         }
 
         public Point3d DrawAnchor2(Point3d anchor1, Polyline outline, Vector3d upstairDirec, Line baseLine, List<Line> baseAxis, double hFactor, double corridorWidth, double scale)
         {
             //output
-            Point3d anchor = new Point3d();
+            Point3d anchor2 = new Point3d();
 
             //base setting
             double minChamberWidth = 3000 / scale; //최소 방 너비 //scale하고 같이 따로 static으로 만들어 둘것 --;
@@ -132,12 +133,11 @@ namespace patternTest
             //set horizontal limit
             List<double> limitCandidates = new List<double>();
 
-            limitCandidates.Add(baseHalfHSize+ scaledCorridorwidth / 2);
-            limitCandidates.Add(baseAxis[0].Length- scaledCorridorwidth / 2);
+            limitCandidates.Add(0);
+            limitCandidates.Add(baseAxis[0].Length- scaledCorridorwidth-baseHalfHSize);
 
             double shortHAxisLength = PCXTools.ExtendFromPt(baseLine.PointAt(0.5),outline,-baseAxis[0].UnitTangent).Length;
-            double chamberLimit = (minChamberWidth-(shortHAxisLength+ baseHalfHSize))+baseHalfHSize+ scaledCorridorwidth / 2;
-            limitCandidates.Add(chamberLimit);
+            limitCandidates.Add(minChamberWidth - shortHAxisLength);
    
             limitCandidates.Sort((x, y) => -x.CompareTo(y));
 
@@ -151,25 +151,32 @@ namespace patternTest
             //draw anchors
             Vector3d hAxis = baseAxis[0].UnitTangent;
 
-            anchor = baseAxis[0].PointAt(0) + hAxis*(hLimit * hFactor+limitLower);
-            return anchor;
-        }
-
-        public Point3d DrawAnchor3(Polyline outline, List<Line> baseAxis, Point3d anchor1, double vFactor, double corridorWidth, double scale)
-        {
-            Point3d anchor2 = new Point3d();
-
-            double vLimit = PCXTools.ExtendFromPt(anchor1, outline, -baseAxis[1].UnitTangent).Length-corridorWidth/(2*scale);
-            anchor2 = anchor1 - baseAxis[1].UnitTangent * (vLimit * vFactor);
+            anchor2 = anchor1 + hAxis*(hLimit * hFactor+limitLower);
             return anchor2;
         }
 
-        public Polyline DrawCorridor(List<Point3d> anchors, List<Line> baseAxis, double corridorWidth, double scale)
+        public Point3d DrawAnchor3(Point3d anchor2, Polyline outline, List<Line> baseAxis, double vFactor, double subLength)
+        {
+            Point3d anchor3 = new Point3d();
+            Point3d anchorBase = baseAxis[0].PointAt(0);
+
+            double vLimit = PCXTools.ExtendFromPt(anchor2, outline, -baseAxis[1].UnitTangent).Length- subLength/2;
+            anchor2 = anchor2 - baseAxis[1].UnitTangent * (vLimit * vFactor);
+            return anchor3;
+        }
+
+        public Polyline DrawCorridor(List<Point3d> anchors, List<Line> baseAxis, double corridorWidth, double subLength, double scale)
         {
             Polyline corridor = new Polyline();
 
-            Rectangle3d mainCorridor = RectangleTools.DrawP2PRect(anchors[0], anchors[1], corridorWidth / scale);
-            corridor = mainCorridor.ToPolyline();
+            Rectangle3d subCorridor = RectangleTools.DrawP2PRect(anchors[0], anchors[1], subLength, corridorWidth / scale);
+            Rectangle3d mainCorridor = RectangleTools.DrawP2PRect(anchors[1], anchors[2], corridorWidth / scale, subLength);
+
+            List<Curve> forUnion = new List<Curve>();
+            forUnion.Add(subCorridor.ToNurbsCurve());
+            forUnion.Add(mainCorridor.ToNurbsCurve());
+
+            corridor = CurveTools.ToPolyline(Curve.CreateBooleanUnion(forUnion)[0]);
 
             return corridor;
         }
