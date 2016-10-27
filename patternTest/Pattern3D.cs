@@ -48,22 +48,22 @@ namespace patternTest
             return baseSeg;
         }
 
-        public double SetBasePtYLimit(Polyline landing, Vector3d upstairDirec, Line baseLine)
+        public double SetBasePtVLimit(Polyline landing, Vector3d upstairDirec, Line baseLine)
         {
-            double yLimit = 0;
+            double vLimit = 0;
 
-            Point3d decidingPt1 = baseLine.PointAt(0.01) - upstairDirec / upstairDirec.Length * 0.1;
-            Point3d decidingPt2 = baseLine.PointAt(0.09) - upstairDirec / upstairDirec.Length * 0.1;
+            Point3d decidingPt1 = baseLine.PointAt(0.01) - upstairDirec / upstairDirec.Length * 0.01;
+            Point3d decidingPt2 = baseLine.PointAt(0.09) - upstairDirec / upstairDirec.Length * 0.01;
 
-            double candidate1 = PCXTools.ExtendFromPt(decidingPt1, landing, -upstairDirec).Length + 0.1;
-            double candidate2 = PCXTools.ExtendFromPt(decidingPt2, landing, -upstairDirec).Length + 0.1;
+            double candidate1 = PCXTools.ExtendFromPt(decidingPt1, landing, -upstairDirec).Length + 0.01;
+            double candidate2 = PCXTools.ExtendFromPt(decidingPt2, landing, -upstairDirec).Length + 0.01;
 
             if (candidate1 > candidate2)
-                yLimit = candidate2;
+                vLimit = candidate2;
             else
-                yLimit = candidate1;
+                vLimit = candidate1;
 
-            return yLimit;
+            return vLimit;
         }
 
         public List<Line> SetBaseAxis(Polyline landing, Polyline outline, Vector3d upstairDirec, Line baseLine)
@@ -72,8 +72,8 @@ namespace patternTest
             List<Line> mainAxis = new List<Line>();
 
             //process
-            double basePtY = SetBasePtYLimit(landing, upstairDirec, baseLine);
-            Point3d basePt = baseLine.PointAt(0.5) - (upstairDirec / upstairDirec.Length) * SetBasePtYLimit(landing, upstairDirec, baseLine)/2;
+            double basePtY = SetBasePtVLimit(landing, upstairDirec, baseLine);
+            Point3d basePt = baseLine.PointAt(0.5) - (upstairDirec / upstairDirec.Length) * SetBasePtVLimit(landing, upstairDirec, baseLine)/2;
 
             //set horizontalAxis, 횡축은 외곽선에서 더 먼 쪽을 선택
             Line horizonReached1 = PCXTools.ExtendFromPt(basePt, outline, baseLine.UnitTangent);
@@ -104,15 +104,16 @@ namespace patternTest
 
             //base setting
             double minChamberWidth = 3000/scale; //최소 방 너비
+            double scaledCorridorwidth = corridorWidth / scale; 
             double baseHalfVSize = baseLine.PointAt(0.5).DistanceTo(baseAxis[0].PointAt(0));
             double baseHalfHSize = baseLine.Length / 2;
 
             //set vertical limit
             List<double> limitCandidates = new List<double>(); 
 
-            limitCandidates.Add(-baseHalfVSize+ corridorWidth / 2);
-            limitCandidates.Add(baseHalfVSize - corridorWidth / 2);
-            double minChamberLimit = (minChamberWidth + corridorWidth / 2) - baseAxis[1].Length;
+            limitCandidates.Add(-baseHalfVSize+ scaledCorridorwidth / 2);
+            limitCandidates.Add(baseHalfVSize - scaledCorridorwidth / 2);
+            double minChamberLimit = (minChamberWidth + scaledCorridorwidth / 2) - baseAxis[1].Length;
             limitCandidates.Add(minChamberLimit);
 
             limitCandidates.Sort((x,y)=>-x.CompareTo(y));
@@ -128,8 +129,8 @@ namespace patternTest
             //draw anchors, 일단 둘 다..
             Vector3d hAxis = baseAxis[0].UnitTangent;
             Vector3d vAxis = baseAxis[1].UnitTangent;
-            Point3d Anchor1first = baseAxis[0].PointAt(0) + hAxis * (baseHalfHSize+corridorWidth/2) - vAxis * (limitLower+vLimit * vFactor); //횡장축부터, from horizontal-longerAxis
-            Point3d Anchor1second = baseAxis[0].PointAt(0) - hAxis * (baseHalfHSize + corridorWidth / 2) - vAxis * (limitLower + vLimit * vFactor);
+            Point3d Anchor1first = baseAxis[0].PointAt(0) + hAxis * (baseHalfHSize+ scaledCorridorwidth / 2) - vAxis * (limitLower+vLimit * vFactor); //횡장축부터, from horizontal-longerAxis
+            Point3d Anchor1second = baseAxis[0].PointAt(0) - hAxis * (baseHalfHSize + scaledCorridorwidth / 2) - vAxis * (limitLower + vLimit * vFactor);
 
             anchors.Add(Anchor1first);
             anchors.Add(Anchor1second);
