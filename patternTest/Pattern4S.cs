@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern4S //이거 진짜 병신...--;
+    class Pattern4S //많이 고쳐야함 --;
     {
         public Line SearchBaseLine(Polyline landing, Vector3d upstairDirec)
         {

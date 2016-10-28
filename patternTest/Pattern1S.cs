@@ -27,34 +27,53 @@ namespace patternTest
                     perpToStair.Add(i);
             }
 
-            perpToStair.Sort(delegate(Line x, Line y)
-                {
-                        Point3d perp1Center = x.PointAt(0.5);
-                        Point3d perp2Center = y.PointAt(0.5);
+            perpToStair.Sort(delegate (Line x, Line y)
+            {
+                Point3d perp1Center = x.PointAt(0.5);
+                Point3d perp2Center = y.PointAt(0.5);
 
-                        Vector3d gapBetween = perp1Center - perp2Center;
-                        double decider = Vector3d.Multiply(gapBetween, upstairDirec);
+                Vector3d gapBetween = perp1Center - perp2Center;
+                double decider = Vector3d.Multiply(gapBetween, upstairDirec);
 
-                    if (decider > 0)
-                        return -1;
-                    else if (decider == 0)
-                        return 0;
-                    else
-                        return 1;
-                });
+                if (decider > 0)
+                    return -1;
+                else if (decider == 0)
+                    return 0;
+                else
+                    return 1;
+            });
 
             baseSeg = perpToStair[0];
 
             return baseSeg;
         }
 
-        public List<Line> SetMainAxis(Polyline landing, Polyline outline, Vector3d upstairDirec, Line baseLine, double scale)
+        public double SetBasePtVLimit(Polyline landing, Vector3d upstairDirec, Line baseLine)
+        {
+            double vLimit = 0;
+
+            Point3d decidingPt1 = baseLine.PointAt(0.01) - upstairDirec / upstairDirec.Length * 0.01;
+            Point3d decidingPt2 = baseLine.PointAt(0.09) - upstairDirec / upstairDirec.Length * 0.01;
+
+            double candidate1 = PCXTools.ExtendFromPt(decidingPt1, landing, -upstairDirec).Length + 0.01;
+            double candidate2 = PCXTools.ExtendFromPt(decidingPt2, landing, -upstairDirec).Length + 0.01;
+
+            if (candidate1 > candidate2)
+                vLimit = candidate2;
+            else
+                vLimit = candidate1;
+
+            return vLimit;
+        }
+
+        public List<Line> SetBaseAxis(Polyline landing, Polyline outline, Vector3d upstairDirec, Line baseLine)
         {
             //output
             List<Line> mainAxis = new List<Line>();
 
             //process
-            Point3d basePt = baseLine.PointAt(0.5) - (upstairDirec / upstairDirec.Length) * (600 / scale);
+            double basePtH = SetBasePtVLimit(landing, upstairDirec, baseLine);
+            Point3d basePt = baseLine.PointAt(0.5) - (upstairDirec / upstairDirec.Length) * SetBasePtVLimit(landing, upstairDirec, baseLine) / 2;
 
             //set horizontalAxis, 횡축은 외곽선에서 더 먼 쪽을 선택
             Line horizonReached1 = PCXTools.ExtendFromPt(basePt, outline, baseLine.UnitTangent);
