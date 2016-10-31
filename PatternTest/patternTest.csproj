@@ -44,6 +44,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common.cs" />
+    <Compile Include="RoomMaker.cs" />
     <Compile Include="Extend.cs" />
     <Compile Include="Pattern1S.cs" />
     <Compile Include="Pattern2S.cs" />

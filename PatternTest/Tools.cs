@@ -301,6 +301,19 @@ namespace patternTest
             return result;
         }
 
+        /// <summary>
+        /// 리스트 전체 합에 대한 각 요소들의 비율을 구해줍니다.
+        /// </summary>
+        public static List<double> GetPropotion(List<double> doubleList, int decimals)
+        {
+            List<double> proportions = new List<double>();
+
+            double sum = SumDouble(doubleList);
+            foreach (double i in doubleList)
+                proportions.Add(Math.Round((i / sum) * 100, decimals));
+
+            return proportions;
+        }
     }
 
     class Tools

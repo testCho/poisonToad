@@ -7,8 +7,30 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern2S
+    class RoomMaker
     {
+
+        //main method
+        public List<Polyline> MakeRoom(List<double> roomAreaSet, Polyline outline, Core core)
+        {
+            List<Polyline> rooms = new List<Polyline>();
+
+            Line baseLine = SearchBaseLine(core);
+            List<Line> baseAxis = SetBaseAxis(outline, core, baseLine);
+            List<corridorType> availableTypes = DetectAvailableType(outline, core);
+
+
+            return rooms;
+        }
+
+        private static List<corridorType> DetectAvailableType(Polyline outline, Core core)
+        {
+            //outline 과 landing 사이 거리,방향으로 가능한 복도타입 판정
+            List<corridorType> available = new List<corridorType>();
+            return available;
+        }
+
+        //method
         public Line SearchBaseLine(Core core)
         {
             //output
@@ -97,86 +119,7 @@ namespace patternTest
 
         }
 
-        public Point3d DrawAnchor1(Line baseLine, List<Line> baseAxis)
-        {
-            Point3d anchor = new Point3d();
-
-            Point3d basePt = baseAxis[0].PointAt(0);
-            Point3d anchorCenter = basePt + baseAxis[0].UnitTangent * (baseLine.Length / 2.0 + Corridor.OneWayWidth / 2);
-            anchor = anchorCenter; //임시
-
-            return anchor;
-        }
-
-        public Point3d DrawAnchor2(Point3d anchor1, Core core, List<Line> baseAxis)
-        {
-            Point3d anchor2 = new Point3d();
-
-            double coreSideLimit = PCXTools.ExtendFromPt(baseAxis[0].PointAt(0), core.CoreLine, -baseAxis[1].UnitTangent).Length;
-            double scaledCorridorWidth = Corridor.OneWayWidth / 2;
-            double vLimit = coreSideLimit + scaledCorridorWidth / 2;
-
-            anchor2 = anchor1 - baseAxis[1].UnitTangent * vLimit;
-
-            return anchor2;
-        }
-
-        public Point3d DrawAnchor3(Point3d anchor2, Polyline outline, List<Line>baseAxis, Line baseLine,double hFactor)
-        {
-            Point3d anchor3 = new Point3d();
-
-            double outlineSideLimit = PCXTools.ExtendFromPt(anchor2, outline, -baseAxis[0].UnitTangent).Length - Corridor.OneWayWidth / 2;
-            double hLimit = baseLine.Length;
-
-            if (outlineSideLimit < hLimit)
-                hLimit = outlineSideLimit;
-
-            anchor3 = anchor2 - baseAxis[0].UnitTangent * hLimit*hFactor;
-
-            return anchor3;
-        }
-
-        public Point3d DrawAnchor4(Point3d anchor3,Polyline outline, List<Line>baseAxis, double vFactor)
-        {
-            Point3d anchor4 = new Point3d();
-
-            double vLimit = PCXTools.ExtendFromPt(anchor3, outline, -baseAxis[1].UnitTangent).Length - Corridor.OneWayWidth / 2;
-            anchor4 = anchor3 - baseAxis[1].UnitTangent *vLimit * vFactor;
-
-            return anchor4;
-        }
-
-        public Polyline DrawCorridor(List<Point3d> anchors, List<Line> mainAxis)
-        {
-            Polyline corridor = new Polyline();
-
-            if (anchors.Count < 2)
-                return null;
-
-            List<Rectangle3d> rectList = new List<Rectangle3d>();
-
-            for (int i = 0; i < anchors.Count - 1; i++)
-            {
-                Rectangle3d tempRect = RectangleTools.DrawP2PRect(anchors[i], anchors[i + 1], Corridor.OneWayWidth);
-                rectList.Add(tempRect);
-            }
-
-            if (rectList.Count > 1)
-            {
-                Curve intersected = rectList[0].ToNurbsCurve();
-
-                for (int i = 0; i < rectList.Count - 1; i++)
-                {
-                    List<Curve> unionCurves = new List<Curve>();
-                    unionCurves.Add(intersected);
-                    unionCurves.Add(rectList[i + 1].ToNurbsCurve());
-                    intersected = Curve.CreateBooleanUnion(unionCurves)[0];
-                }
-
-                corridor = CurveTools.ToPolyline(intersected);
-            }
-
-            return corridor;
-        }
+        //enum
+        private enum corridorType {SH,SV,DH,DV} //복도타입 - S:single 편복도, D: double 중복도, H: 횡축, V: 종축
     }
 }

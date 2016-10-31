@@ -9,20 +9,20 @@ namespace patternTest
 {
     class Pattern3D
     {
-        public Line SearchBaseLine(Polyline landing, Vector3d upstairDirec)
+        public Line SearchBaseLine(Core core)
         {
             //output
             Line baseSeg = new Line();
 
             //process
-            List<Line> landingSeg = landing.GetSegments().ToList();
+            List<Line> landingSeg = core.Landing.GetSegments().ToList();
             List<Line> perpToStair = new List<Line>();
 
             double perpTolerance = 0.005;
 
             foreach (Line i in landingSeg)
             {
-                double axisDecider = Math.Abs(Vector3d.Multiply(i.Direction, upstairDirec));
+                double axisDecider = Math.Abs(Vector3d.Multiply(i.Direction, core.UpstairDirec));
                 if (axisDecider < perpTolerance)
                     perpToStair.Add(i);
             }
@@ -33,7 +33,7 @@ namespace patternTest
                 Point3d perp2Center = y.PointAt(0.5);
 
                 Vector3d gapBetween = perp1Center - perp2Center;
-                double decider = Vector3d.Multiply(gapBetween, upstairDirec);
+                double decider = Vector3d.Multiply(gapBetween, core.UpstairDirec);
 
                 if (decider > 0)
                     return -1;
@@ -48,15 +48,15 @@ namespace patternTest
             return baseSeg;
         }
 
-        public double SetBasePtVLimit(Polyline landing, Vector3d upstairDirec, Line baseLine)
+        public double SetBasePtVLimit(Core core, Line baseLine)
         {
             double vLimit = 0;
 
-            Point3d decidingPt1 = baseLine.PointAt(0.01) - upstairDirec / upstairDirec.Length * 0.01;
-            Point3d decidingPt2 = baseLine.PointAt(0.09) - upstairDirec / upstairDirec.Length * 0.01;
+            Point3d decidingPt1 = baseLine.PointAt(0.01) - core.UpstairDirec / core.UpstairDirec.Length * 0.01;
+            Point3d decidingPt2 = baseLine.PointAt(0.09) - core.UpstairDirec / core.UpstairDirec.Length * 0.01;
 
-            double candidate1 = PCXTools.ExtendFromPt(decidingPt1, landing, -upstairDirec).Length + 0.01;
-            double candidate2 = PCXTools.ExtendFromPt(decidingPt2, landing, -upstairDirec).Length + 0.01;
+            double candidate1 = PCXTools.ExtendFromPt(decidingPt1, core.Landing, -core.UpstairDirec).Length + 0.01;
+            double candidate2 = PCXTools.ExtendFromPt(decidingPt2, core.Landing, -core.UpstairDirec).Length + 0.01;
 
             if (candidate1 > candidate2)
                 vLimit = candidate2;
@@ -66,14 +66,14 @@ namespace patternTest
             return vLimit;
         }
 
-        public List<Line> SetBaseAxis(Polyline landing, Polyline outline, Vector3d upstairDirec, Line baseLine)
+        public List<Line> SetBaseAxis(Polyline outline, Core core, Line baseLine)
         {
             //output
             List<Line> mainAxis = new List<Line>();
 
             //process
-            double basePtY = SetBasePtVLimit(landing, upstairDirec, baseLine);
-            Point3d basePt = baseLine.PointAt(0.5) - (upstairDirec / upstairDirec.Length) * SetBasePtVLimit(landing, upstairDirec, baseLine)/2;
+            double basePtY = SetBasePtVLimit(core, baseLine);
+            Point3d basePt = baseLine.PointAt(0.5) - (core.UpstairDirec / core.UpstairDirec.Length) * SetBasePtVLimit(core, baseLine)/2;
 
             //set horizontalAxis, 횡축은 외곽선에서 더 먼 쪽을 선택
             Line horizonReached1 = PCXTools.ExtendFromPt(basePt, outline, baseLine.UnitTangent);
@@ -85,8 +85,8 @@ namespace patternTest
                 mainAxis.Add(horizonReached2);
 
             //set verticalAxis, 종축은 외곽선에서 더 가까운 쪽을 선택
-            Line verticalReached1 = PCXTools.ExtendFromPt(basePt, outline, upstairDirec);
-            Line verticalReached2 = PCXTools.ExtendFromPt(basePt, outline, -upstairDirec);
+            Line verticalReached1 = PCXTools.ExtendFromPt(basePt, outline, core.UpstairDirec);
+            Line verticalReached2 = PCXTools.ExtendFromPt(basePt, outline, -core.UpstairDirec);
 
             if (verticalReached1.Length < verticalReached2.Length)
                 mainAxis.Add(verticalReached1);
@@ -97,23 +97,23 @@ namespace patternTest
 
         }
 
-        public List<Point3d> DrawAnchor1(Vector3d upstairDirec, Line baseLine, List<Line> baseAxis, double vFactor, double corridorWidth, double scale)
+        public List<Point3d> DrawAnchor1(Line baseLine, List<Line> baseAxis, double vFactor)
         {
             //output
             List<Point3d> anchors = new List<Point3d>();
 
             //base setting
-            double minChamberWidth = 3000/scale; //최소 방 너비
-            double scaledCorridorwidth = corridorWidth / scale; 
+            double minRoomWidth = Corridor.MinRoomWidth; //최소 방 너비
+            double corridorwidth = Corridor.TwoWayWidth; 
             double baseHalfVSize = baseLine.PointAt(0.5).DistanceTo(baseAxis[0].PointAt(0));
             double baseHalfHSize = baseLine.Length / 2;
 
             //set vertical limit
             List<double> limitCandidates = new List<double>(); 
 
-            limitCandidates.Add(-baseHalfVSize+ scaledCorridorwidth / 2);
-            limitCandidates.Add(baseHalfVSize - scaledCorridorwidth / 2);
-            double minChamberLimit = (minChamberWidth + scaledCorridorwidth / 2) - baseAxis[1].Length;
+            limitCandidates.Add(-baseHalfVSize+ corridorwidth / 2);
+            limitCandidates.Add(baseHalfVSize - corridorwidth / 2);
+            double minChamberLimit = (minRoomWidth + corridorwidth / 2) - baseAxis[1].Length;
             limitCandidates.Add(minChamberLimit);
 
             limitCandidates.Sort((x,y)=>-x.CompareTo(y));
@@ -129,8 +129,8 @@ namespace patternTest
             //draw anchors, 일단 둘 다..
             Vector3d hAxis = baseAxis[0].UnitTangent;
             Vector3d vAxis = baseAxis[1].UnitTangent;
-            Point3d Anchor1first = baseAxis[0].PointAt(0) + hAxis * (baseHalfHSize+ scaledCorridorwidth / 2) - vAxis * (limitLower+vLimit * vFactor); //횡장축부터, from horizontal-longerAxis
-            Point3d Anchor1second = baseAxis[0].PointAt(0) - hAxis * (baseHalfHSize + scaledCorridorwidth / 2) - vAxis * (limitLower + vLimit * vFactor);
+            Point3d Anchor1first = baseAxis[0].PointAt(0) + hAxis * (baseHalfHSize+ corridorwidth / 2) - vAxis * (limitLower+vLimit * vFactor); //횡장축부터, from horizontal-longerAxis
+            Point3d Anchor1second = baseAxis[0].PointAt(0) - hAxis * (baseHalfHSize + corridorwidth / 2) - vAxis * (limitLower + vLimit * vFactor);
 
             anchors.Add(Anchor1first);
             anchors.Add(Anchor1second);
@@ -138,31 +138,39 @@ namespace patternTest
             return anchors;
         }
 
-        public List<Point3d> DrawAnchor2(List<Point3d> anchor1, Polyline outline, List<Line> mainAxis, List<double> hFactors, double corridorWidth, double scale)
+        public List<Point3d> DrawAnchor2(List<Point3d> anchor1, Polyline outline, List<Line> mainAxis, List<double> hFactors)
         {
             List<Point3d> anchor2 = new List<Point3d>();
 
             for(int i=0; i<anchor1.Count;i++)
             {
                 Vector3d tempAxis = mainAxis[0].UnitTangent*Math.Pow(-1,i);
-                double hLimit = PCXTools.ExtendFromPt(anchor1[i], outline, tempAxis).Length-corridorWidth/(2*scale);
+                double hLimit = PCXTools.ExtendFromPt(anchor1[i], outline, tempAxis).Length- Corridor.TwoWayWidth/2;
                 anchor2.Add(anchor1[i] +tempAxis*hLimit*hFactors[i]);
             }
 
             return anchor2;
         }
 
-        public List<Polyline> DrawCorridor(List<Point3d> anchor1, List<Point3d> anchor2, double corridorWidth, double scale)
+        public List<Polyline> DrawCorridor(List<Point3d> anchor1, List<Point3d> anchor2)
         {
             List<Polyline> corridors = new List<Polyline>();
 
             for(int i=0; i<anchor1.Count;i++)
             {
-                Rectangle3d tempRect = RectangleTools.DrawP2PRect(anchor1[i], anchor2[i], corridorWidth/scale);
+                Rectangle3d tempRect = RectangleTools.DrawP2PRect(anchor1[i], anchor2[i], Corridor.TwoWayWidth);
                 corridors.Add(tempRect.ToPolyline());
             }
 
             return corridors;
+        }
+
+        public Polyline DrawFirstDivider(Polyline outline, Core core)
+        {
+            Polyline firstDivider = new Polyline();
+
+            
+            return firstDivider;
         }
     }
 }
