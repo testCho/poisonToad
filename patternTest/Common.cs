@@ -14,7 +14,7 @@ namespace patternTest
         {
             CoreLine = coreLine;
             Landing = landing;
-            UpstairDirec = UpstairDirec;
+            UpstairDirec = upstairDirec;
         }
 
         //property
@@ -37,5 +37,25 @@ namespace patternTest
         public static double MinRoomWidth { get { return minRoomWidth / scale; } private set { } }
         public static double OneWayWidth { get { return oneWayCorridorWidth / scale; } private set { } }
         public static double TwoWayWidth { get { return twoWayCorridorWidth / scale; } private set { } }
+    }
+
+    class FakeTools
+    {
+        public static List<double> MakeRandomFactor(int numOfRoom, int seed)
+        {
+            List<double> randomFactors = new List<double>();
+
+            for(int i=0;i<numOfRoom+1;i++)
+            {
+                Random rand1 = new Random(seed + i);
+                double tempFactor = rand1.NextDouble();
+                if (tempFactor < 0.001)
+                    tempFactor = 0.001;
+
+                randomFactors.Add(tempFactor);
+            }
+
+            return randomFactors;
+        }
     }
 }

@@ -9,6 +9,61 @@ namespace patternTest
 {
     class Pattern1S
     {
+        //main method
+        public List<Polyline> DrawDividers(Core core, Polyline outline, double numOfRoom, List<double> anchorFactors, List<double> dividerFactors)
+        {
+            //
+            Line baseLine = SearchBaseLine(core);
+            List<Line> baseAxis = SetBaseAxis(outline, core, baseLine);
+
+            //
+            List<Point3d> anchors = new List<Point3d>();
+            Point3d anchor1 = DrawAnchor1(baseLine, baseAxis);
+            Point3d anchor2 = DrawAnchor2(anchor1, core, outline, baseAxis, anchorFactors[0]);
+            Point3d anchor3 = DrawAnchor3(anchor2, outline, baseAxis, anchorFactors[1]);
+
+            anchors.Add(anchor1);
+            anchors.Add(anchor2);
+            anchors.Add(anchor3);
+
+            //
+            Polyline corridor = DrawCorridor(anchors, baseAxis);
+
+            //
+            List<Polyline> dividers = new List<Polyline>();
+
+            if (numOfRoom < 2)
+                return null;
+            else
+            {
+                Point3d nextLimit = new Point3d();
+                for (int i = 1; i < numOfRoom; i++)
+                {
+                    Polyline tempDivider = new Polyline();
+                    double tempFactor = dividerFactors[i];
+
+                    if ((tempFactor > 1) || (tempFactor < 0))
+                        break;
+
+                    if (i == 1)
+                        tempDivider = DrawFirstDivider(anchor1, anchor3, outline, baseAxis, dividerFactors[0], dividerFactors[1], out nextLimit);
+                    else if (tempFactor < 1)
+                        tempDivider = DrawMidDivider(nextLimit, anchor3, outline, baseAxis, tempFactor, out nextLimit);
+                    else
+                    {
+                        tempDivider = DrawMidDivider(nextLimit, anchor3, outline, baseAxis, tempFactor, out nextLimit);
+                        dividers.Add(tempDivider);
+                        break;
+                    }
+
+                    dividers.Add(tempDivider);
+                }
+            }
+
+            return dividers;
+        }
+
+        //method
         public Line SearchBaseLine(Core core)
         {
             //output
@@ -170,7 +225,7 @@ namespace patternTest
             return corridor;
         }
 
-        public Polyline DrawFirstDivider(Point3d anchor1, Point3d hLimitPt, Polyline outline, List<Line> mainAxis, double hFactor, double vFactor)
+        public Polyline DrawFirstDivider(Point3d anchor1, Point3d hLimitPt, Polyline outline, List<Line> mainAxis, double hFactor, double vFactor, out Point3d nextLimit)
         {
             Polyline firstDivider = new Polyline();
 
@@ -226,43 +281,42 @@ namespace patternTest
 
             dividingVertex.Add(anchor1Copy);
             dividingVertex.Add(firstAnchor1);
-            dividingVertex.Add(firstAnchor2);
+            dividingVertex.Add(firstAnchor2);//중복 판정 넣어야함..
             dividingVertex.Add(limitDecider2.PointAt(1));
 
             firstDivider = new Polyline(dividingVertex);
 
+            nextLimit = firstAnchor2;
             return firstDivider;
         }
 
-        public Polyline DrawLastDivider(Point3d anchor3, Polyline outline, List<Line> mainAxis)
+        public Polyline DrawMidDivider(Point3d startLimit, Point3d anchor3, Polyline outline, List<Line> baseAxis, double hFactor, out Point3d nextLimit)
         {
-            Polyline lastDivider = new Polyline();
-
-            Plane basePln = new Plane(anchor3, mainAxis[0].UnitTangent, -mainAxis[1].UnitTangent);
-            Point3d anchor3Copy = new Point3d(anchor3) + basePln.XAxis * Corridor.OneWayWidth / 2 + basePln.YAxis * Corridor.OneWayWidth / 2;
-
-            //transform coordinate
-
-            //check horizontal limit
-
-            //set vertical limit
-
-            //draw new anchor and dividing line
-            Line lastLine = PCXTools.ExtendFromPt(anchor3Copy, outline, basePln.YAxis);
-
-            List<Point3d> dividingVertex = new List<Point3d>();
-            dividingVertex.Add(anchor3Copy);
-            dividingVertex.Add(lastLine.PointAt(1));
-
-            lastDivider = new Polyline(dividingVertex);
-
-            return lastDivider;
- 
-        }
-
-        public Polyline DrawMidDivider(List<Point3d> dividerLimit, Polyline outline, List<Line> mainAxis, double hFactor)
-        {
+            /*output*/
             Polyline midDivider = new Polyline();
+
+            /*process*/
+            Plane basePlane = new Plane(startLimit, baseAxis[0].UnitTangent, -baseAxis[1].UnitTangent);
+
+            //change coordinate
+            Point3d ccLimit = PointTools.ChangeCoordinate(startLimit, Plane.WorldXY, basePlane);
+            Point3d ccAnchor3 = PointTools.ChangeCoordinate(anchor3, Plane.WorldXY, basePlane)+Vector3d.XAxis*Corridor.OneWayWidth/2+Vector3d.YAxis*Corridor.OneWayWidth/2;
+
+            //set horizontal limit
+            double hLimit = ccAnchor3.X - ccLimit.X;
+
+            //draw new anchor and divider
+            Point3d ccDividingAnchor = ccLimit - Vector3d.YAxis * ( ccLimit.Y- ccAnchor3.Y);
+            Point3d dividingAnchor = PointTools.ChangeCoordinate(ccDividingAnchor, basePlane, Plane.WorldXY) + basePlane.XAxis*(hLimit*hFactor);
+            Line divider = PCXTools.ExtendFromPt(dividingAnchor, outline, basePlane.YAxis);
+
+            List<Point3d> dividerVertex = new List<Point3d>();
+            dividerVertex.Add(divider.PointAt(0));
+            dividerVertex.Add(divider.PointAt(1));
+
+            nextLimit = dividingAnchor;
+            midDivider = new Polyline(dividerVertex);
+
             return midDivider;
         }       
 

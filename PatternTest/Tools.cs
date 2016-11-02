@@ -13,7 +13,15 @@ namespace patternTest
         {
             Vector3d rotatedVector = new Vector3d(baseVector.X * Math.Cos(angle) - baseVector.Y * Math.Sin(angle), baseVector.X * Math.Sin(angle) + baseVector.Y * Math.Cos(angle), 0);
             return rotatedVector;
-        }     
+        } 
+        
+        public static Vector3d ChangeCoordinate(Vector3d baseVector, Plane fromPln, Plane toPln)
+        {
+            Vector3d changedVector = baseVector;
+            changedVector.Transform(Transform.ChangeBasis(fromPln, toPln));
+
+            return changedVector;
+        }
     }
 
     class RectangleTools
@@ -258,6 +266,25 @@ namespace patternTest
             return debug;
         }
 
+        public static Polyline ChangeCoordinate(Polyline basePoly, Plane fromPln, Plane toPln)
+        {
+            Polyline changedPoly = new Polyline(basePoly);
+            changedPoly.Transform(Transform.ChangeBasis(fromPln, toPln));
+
+            return changedPoly;
+        }
+
+    }
+
+    class PointTools
+    {
+        public static Point3d ChangeCoordinate(Point3d basePt, Plane fromPln, Plane toPln)
+        {
+            Point3d changedPt = basePt;
+            changedPt.Transform(Transform.ChangeBasis(fromPln, toPln));
+
+            return changedPt;
+        }
     }
 
     class CurveTools
@@ -287,6 +314,13 @@ namespace patternTest
             return output;
         }
 
+        public static Curve ChangeCoordinate(Curve baseCrv, Plane fromPln, Plane toPln)
+        {
+            Curve changedCrv = baseCrv.DuplicateCurve();
+            changedCrv.Transform(Transform.ChangeBasis(fromPln, toPln));
+
+            return changedCrv;
+        }
     }
 
     class NumberTools
