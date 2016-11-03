@@ -274,6 +274,21 @@ namespace patternTest
             return changedPoly;
         }
 
+        public static bool IsOverlap(Polyline poly1, Polyline poly2)
+        {
+            Curve polyCrv1 = poly1.ToNurbsCurve();
+            Curve polyCrv2 = poly2.ToNurbsCurve();
+
+            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(polyCrv1, polyCrv2,0,0);
+            foreach (var i in polyIntersection)
+            {
+                if (i.IsOverlap)
+                    return true;
+            }
+
+            return false;
+        }
+  
     }
 
     class PointTools
@@ -320,6 +335,18 @@ namespace patternTest
             changedCrv.Transform(Transform.ChangeBasis(fromPln, toPln));
 
             return changedCrv;
+        }
+
+        public static bool IsOverlap(Curve curve1, Curve curve2)
+        {
+            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve1, curve2, 0, 0);
+            foreach (var i in polyIntersection)
+            {
+                if (i.IsOverlap)
+                    return true;
+            }
+
+            return false;
         }
     }
 
@@ -584,7 +611,7 @@ namespace patternTest
                 Random rand1 = new Random(seed);
                 Random rand2 = new Random(seed + 7);
 
-                Polyline ccwBound = AlignPolyline(bound);
+                Polyline ccwBound = PolylineTools.AlignPolyline(bound);
                 List<Point3d> boundVertex = new List<Point3d>(ccwBound);
                 boundVertex.RemoveAt(boundVertex.Count - 1);
                 int vertCount = boundVertex.Count;
@@ -631,7 +658,7 @@ namespace patternTest
 
                 for (int i = 0; i < 4; i++)
                 {
-                    Vector3d tempAxis = RotateVectorXY(Vector3d.XAxis, axisAngle + Math.PI / 2 * i);
+                    Vector3d tempAxis = VectorTools.RotateVectorXY(Vector3d.XAxis, axisAngle + Math.PI / 2 * i);
 
                     LineCurve acrossing = new LineCurve(basePt, new Point3d(basePt + tempAxis * axisLength));
                     var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(acrossing, bound.ToNurbsCurve(), 0, 0);
@@ -819,6 +846,10 @@ namespace patternTest
             List<Curve> tempLocalResult = new List<Curve>();
 
             var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(polyCurve1, polyCurve2, 0, 0);
+
+            if (tempIntersection.Count == 0) //없으면 null..
+                return resultPolyine;
+
             foreach (var i in tempIntersection)
             {
                 tempParamA.Add(i.ParameterA);
@@ -884,6 +915,10 @@ namespace patternTest
                     List<Curve> tempLocalResult = new List<Curve>();
 
                     var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(i, j, 0, 0);
+
+                    if (tempIntersection.Count == 0) // 없으면 다음커브로..
+                        continue;
+
                     foreach (var k in tempIntersection)
                     {
                         tempParamA.Add(k.ParameterA);

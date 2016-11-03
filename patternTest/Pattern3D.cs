@@ -164,13 +164,5 @@ namespace patternTest
 
             return corridors;
         }
-
-        public Polyline DrawFirstDivider(Polyline outline, Core core)
-        {
-            Polyline firstDivider = new Polyline();
-
-            
-            return firstDivider;
-        }
     }
 }
