@@ -22,6 +22,22 @@ namespace patternTest
 
             return changedVector;
         }
+        
+        /// <summary>
+        /// 주어진 폴리라인 위의 한 세그먼트에 대해 폴리라인 내부로 향하는 단위벡터를 구해줍니다.
+        /// </summary>
+        public static Vector3d GetInnerPerpUnit(Line segment, Polyline boundary, double tolerance)
+        {
+            Vector3d perpVector = RotateVectorXY(segment.UnitTangent, Math.PI / 2);
+            Vector3d perpVector2 = RotateVectorXY(segment.UnitTangent, -Math.PI / 2);
+            Point3d basePt = segment.PointAt(0.5) + perpVector * tolerance;
+            int decider = (int)boundary.ToNurbsCurve().Contains(basePt);
+
+            if (decider == 1)
+                return perpVector;
+
+            return perpVector2;
+        }
     }
 
     class RectangleTools
@@ -232,7 +248,7 @@ namespace patternTest
 
                 Point3d tempPt = new Point3d();
 
-                if (decider1 > 0) // concave
+                if (decider1 > 0.005) // concave
                 {
                     if (decider2 < 0) // blunt
                         tempPt = boundVertex[(i + 1) % numVertex] + perpVector[i] * a + alignVector[i] * ((a * cos - b) / sin);
@@ -240,7 +256,7 @@ namespace patternTest
                         tempPt = boundVertex[(i + 1) % numVertex] + perpVector[i] * a + alignVector[i] * ((-a * cos - b) / sin);
                 }
 
-                else if (decider1 < 0) // convex
+                else if (decider1 < -0.005) // convex
                 {
                     if (decider2 < 0) //blunt
                         tempPt = boundVertex[(i + 1) % numVertex] + perpVector[i] * a + alignVector[i] * ((-a * cos + b) / sin);
@@ -248,7 +264,7 @@ namespace patternTest
                         tempPt = boundVertex[(i + 1) % numVertex] + perpVector[i] * a + alignVector[i] * ((a * cos + b) / sin);
                 }
 
-                else //straight
+                else //straight & near straight
                     tempPt = boundVertex[(i + 1) % numVertex] + perpVector[i] * Math.Max(a, b);
 
                 trimmedOffsetPt.Add(tempPt);
@@ -362,10 +378,7 @@ namespace patternTest
             return result;
         }
 
-        /// <summary>
-        /// 리스트 전체 합에 대한 각 요소들의 비율을 구해줍니다.
-        /// </summary>
-        public static List<double> GetPropotion(List<double> doubleList, int decimals)
+        public static List<double> GetPercentage(List<double> doubleList, int decimals)
         {
             List<double> proportions = new List<double>();
 
@@ -374,6 +387,17 @@ namespace patternTest
                 proportions.Add(Math.Round((i / sum) * 100, decimals));
 
             return proportions;
+        }
+
+        public static List<double> ScaleToNewSum(double newSum, List<double> oldPortions)
+        {
+            List<double> newPortions = new List<double>();
+
+            double oldSum = SumDouble(oldPortions);
+            foreach (double i in oldPortions)
+                newPortions.Add(newSum*(i/oldSum));
+
+            return newPortions;
         }
     }
 

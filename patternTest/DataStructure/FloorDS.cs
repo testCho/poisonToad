@@ -39,23 +39,47 @@ namespace patternTest
         public static double TwoWayWidth { get { return twoWayCorridorWidth / scale; } private set { } }
     }
 
-    class FakeTools
+    public class RefinedOutline
     {
-        public static List<double> MakeRandomFactor(int numOfRoom, int seed)
+        //constructor
+        public RefinedOutline()
+        { }
+
+        public RefinedOutline(Polyline trimmedOutline, List<RoomLine> labeledCoreUnion)
         {
-            List<double> randomFactors = new List<double>();
-
-            for(int i=0;i<numOfRoom+1;i++)
-            {
-                Random rand1 = new Random(seed + i);
-                double tempFactor = rand1.NextDouble();
-                if (tempFactor < 0.001)
-                    tempFactor = 0.001;
-
-                randomFactors.Add(tempFactor);
-            }
-
-            return randomFactors;
+            this.Outline = trimmedOutline;
+            this.LabeledCore = labeledCoreUnion;
         }
+
+        //property
+        public Polyline Outline { get; private set; }
+        public List<RoomLine> LabeledCore { get; private set; }
+
     }
+
+    public class RoomLine
+    {
+        //constructor
+        public RoomLine()
+        { }
+
+        public RoomLine(Line line, LineType type)
+        {
+            this.Liner = line;
+            this.Type = type;
+        }
+
+        public RoomLine(RoomLine roomLine)
+        {
+            this.Liner = roomLine.Liner;
+            this.Type = roomLine.Type;
+        }
+
+        //property
+        public Line Liner { get; private set; }
+        public LineType Type { get; private set; }
+        public double Length { get { return Liner.Length; } private set { } }
+        public Vector3d UnitTangent { get { return Liner.UnitTangent; } private set { } }
+    }
+
 }
