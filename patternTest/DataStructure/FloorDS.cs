@@ -106,5 +106,21 @@ namespace patternTest
         public Line Liner { get { return BaseLine.Liner; } private set { } }
     }
 
+    public class DividingLine
+    {
+        public DividingLine(List<RoomLine> dividingLine, PartitionOrigin origin)
+        {
+            this.Lines = dividingLine;
+            this.Origin = origin;
+        }
 
+        public DividingLine()
+        { }
+
+        //property
+        public List<RoomLine> Lines { get; set; }
+        public Vector3d FirstDirec { get { return Lines[0].Liner.UnitTangent; } private set { } }
+        public Vector3d LastDirec { get { return Lines[Lines.Count-1].Liner.UnitTangent; } private set { } }
+        public PartitionOrigin Origin { get; set; }
+    }
 }

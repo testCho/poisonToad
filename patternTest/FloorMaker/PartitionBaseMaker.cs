@@ -38,7 +38,7 @@ namespace patternTest
 
 
         //method
-        private static RoomLine FindNearestCorridor(List<RoomLine> coreSeg, RoomLine baseLine)
+        public static RoomLine FindNearestCorridor(List<RoomLine> coreSeg, RoomLine baseLine)
         {
             RoomLine nearestCorridor = new RoomLine();
             int baseIndex = coreSeg.FindIndex(i => (i.Liner == baseLine.Liner));//어쩌면 못 찾을수도

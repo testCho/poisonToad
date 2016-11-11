@@ -10,37 +10,45 @@ namespace patternTest
     class PartitionMaker
     {
         //method
-        public static List<Polyline> DrawPartitions(RefinedOutline refinedOuter, List<double> roomAreas)
+        public static List<List<RoomLine>> DrawPartitions(RefinedOutline refinedOuter, List<double> roomAreas)
         {
-            List<Polyline> partitions = new List<Polyline>();
-            PartitionOrigin previousPt = new PartitionOrigin();
+            List<List<RoomLine>> partitionList = new List<List<RoomLine>>();
             List<double> redistribAreas = NumberTools.ScaleToNewSum(PolylineTools.GetArea(refinedOuter.Outline), roomAreas);
+            DividingLine initialDivider = SetInitialDivider(refinedOuter);
 
-            for (int i = 0; i < redistribAreas.Count; i++)
+            for (int i=0; i<redistribAreas.Count; i++)
             {
-                PartitionOrigin startPt = PartitionBaseMaker.FindStartPt(refinedOuter.LabeledCore, previousPt);
-                PartitionOrigin currentEndPt = new PartitionOrigin();
-                Polyline tempPartition = DrawEachPartition(refinedOuter, startPt, redistribAreas[i], out currentEndPt);
-                partitions.Add(tempPartition);
+                DividingLine nextDivider = new DividingLine();
+                List<RoomLine> eachPartition = DrawEachPartition(initialDivider, out nextDivider); //자체적으로도 재귀호출 해야함..
+                partitionList.Add(eachPartition);
+                initialDivider = nextDivider;
+            }
+            
+            return partitionList;
+        }
 
-                previousPt = currentEndPt;
+        public DividingLine SetInitialDivider(RefinedOutline refinedOuter)
+        {
+            DividingLine initialDivider = new DividingLine();
+
+            double dotTolerance = 0.005;
+            if (refinedOuter.LabeledCore[0].Type == LineType.Corridor)
+                return DrawInitialDivider(refinedOuter.LabeledCore[0]);
+
+            RoomLine nearestCorridor = PartitionBaseMaker.FindNearestCorridor(refinedOuter.LabeledCore, refinedOuter.LabeledCore[0]);
+            bool decider = Math.Abs(Vector3d.Multiply(nearestCorridor.UnitTangent, previousEnd.BaseLine.UnitTangent)) < dotTolerance;
+
+            if (decider)
+                return DrawInitialDivider(refinedOuter.LabeledCore[0]);
+            else
+            {
+               //pointAt(0)이 시작점이 안 될 수 있음(ccw에서는 됨)..=> 고친다면 논리로
+                return DrawInitialDivider(nearestCorridor);
             }
 
-            return partitions;
+            return initialDivider;
         }
 
-        private static Polyline DrawEachPartition(RefinedOutline refinedOuter, PartitionOrigin start, double TargetArea, out PartitionOrigin currentEnd)
-        {
-            Polyline onePartition = new Polyline();
-            PartitionOrigin onePartitionEnd = new PartitionOrigin();
-
-            //set endPartition origin
-            RoomLine endBase = PartitionBaseMaker.FindEndPtBase(refinedOuter.LabeledCore, start);
-
-            //draw cuttingLine
-            currentEnd = onePartitionEnd;
-            return onePartition;
-        }
-
-    }
+        public DividingLine(RoomLine baseLine)
+        { }
 }

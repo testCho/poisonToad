@@ -75,5 +75,6 @@ namespace patternTest
 
             return labeledRoomBase;
         }
+
     }
 }
