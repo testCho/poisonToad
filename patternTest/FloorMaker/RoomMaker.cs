@@ -15,12 +15,11 @@ namespace patternTest
         {
             List<Polyline> rooms = new List<Polyline>();
 
-            Line baseLine = SearchBaseLine(core);
+            Line baseLine = CorridorBaseMaker.SearchBaseLine(core);
             List<Line> subAxis = new List<Line>();
-            List<Line> baseAxis = SetBaseAxis(outline, core, baseLine, out subAxis);
+            List<Line> baseAxis = CorridorBaseMaker.SetBaseAxis(outline, core, baseLine, out subAxis);
 
             List<corridorType> availableTypes = DetectCorridorType(outline, core, baseAxis, subAxis);
-
 
             return rooms;
         }

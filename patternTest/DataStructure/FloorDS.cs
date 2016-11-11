@@ -82,4 +82,29 @@ namespace patternTest
         public Vector3d UnitTangent { get { return Liner.UnitTangent; } private set { } }
     }
 
+    public class PartitionOrigin
+    {
+        public PartitionOrigin(Point3d origin, RoomLine baseLine)
+        {
+            this.Origin = origin;
+            this.BaseLine = baseLine;
+        }
+
+        public PartitionOrigin()
+        { }
+
+        public PartitionOrigin(PartitionOrigin partitionOrigin)
+        {
+            this.Origin = partitionOrigin.Origin;
+            this.BaseLine = partitionOrigin.BaseLine;
+        }
+
+        //property
+        public Point3d Origin { get; set; }
+        public RoomLine BaseLine { get; set; }
+        public LineType Type { get { return BaseLine.Type; } private set { } }
+        public Line Liner { get { return BaseLine.Liner; } private set { } }
+    }
+
+
 }
