@@ -39,21 +39,23 @@ namespace patternTest
         public static double TwoWayWidth { get { return twoWayCorridorWidth / scale; } private set { } }
     }
 
-    public class RefinedOutline
+    public class LabeledOutline
     {
         //constructor
-        public RefinedOutline()
+        public LabeledOutline()
         { }
 
-        public RefinedOutline(Polyline trimmedOutline, List<RoomLine> labeledCoreUnion)
+        public LabeledOutline(Polyline trimmedOutline, Polyline pureOutline, List<RoomLine> labeledCore)
         {
-            this.Outline = trimmedOutline;
-            this.LabeledCore = labeledCoreUnion;
+            this.Trimmed = trimmedOutline;
+            this.Pure = pureOutline;
+            this.Core = labeledCore;
         }
 
         //property
-        public Polyline Outline { get; private set; }
-        public List<RoomLine> LabeledCore { get; private set; }
+        public Polyline Trimmed { get; private set; }
+        public Polyline Pure { get; private set; }
+        public List<RoomLine> Core { get; private set; }
 
     }
 
@@ -80,27 +82,28 @@ namespace patternTest
         public LineType Type { get; private set; }
         public double Length { get { return Liner.Length; } private set { } }
         public Vector3d UnitTangent { get { return Liner.UnitTangent; } private set { } }
+        public Vector3d UnitNormal { get { return VectorTools.RotateVectorXY(UnitTangent, Math.PI / 2); } private set { } }
     }
 
-    public class PartitionOrigin
+    public class DividingOrigin
     {
-        public PartitionOrigin(Point3d origin, RoomLine baseLine)
+        public DividingOrigin(Point3d basePt, RoomLine baseLine)
         {
-            this.Origin = origin;
+            this.Point = basePt;
             this.BaseLine = baseLine;
         }
 
-        public PartitionOrigin()
+        public DividingOrigin()
         { }
 
-        public PartitionOrigin(PartitionOrigin partitionOrigin)
+        public DividingOrigin(DividingOrigin otherOrigin)
         {
-            this.Origin = partitionOrigin.Origin;
-            this.BaseLine = partitionOrigin.BaseLine;
+            this.Point = otherOrigin.Point;
+            this.BaseLine = otherOrigin.BaseLine;
         }
 
         //property
-        public Point3d Origin { get; set; }
+        public Point3d Point { get; set; }
         public RoomLine BaseLine { get; set; }
         public LineType Type { get { return BaseLine.Type; } private set { } }
         public Line Liner { get { return BaseLine.Liner; } private set { } }
@@ -108,10 +111,10 @@ namespace patternTest
 
     public class DividingLine
     {
-        public DividingLine(List<RoomLine> dividingLine, PartitionOrigin origin)
+        public DividingLine(List<RoomLine> dividingLine, DividingOrigin thisLineOrigin)
         {
             this.Lines = dividingLine;
-            this.Origin = origin;
+            this.Origin = thisLineOrigin;
         }
 
         public DividingLine()
@@ -121,6 +124,38 @@ namespace patternTest
         public List<RoomLine> Lines { get; set; }
         public Vector3d FirstDirec { get { return Lines[0].Liner.UnitTangent; } private set { } }
         public Vector3d LastDirec { get { return Lines[Lines.Count-1].Liner.UnitTangent; } private set { } }
-        public PartitionOrigin Origin { get; set; }
+        public DividingOrigin Origin { get; set; }
     }
+
+    public class DividerParams
+    {
+        public DividerParams(DividingLine dividerPrevious, DividingOrigin testCurrent, LabeledOutline outlineLabel)
+        {
+            this.Divider = dividerPrevious;
+            this.Origin = testCurrent;
+            this.OutlineLabel = outlineLabel;
+        }
+
+        public DividerParams(DividerParams otherParams)
+        {
+            this.Divider = otherParams.Divider;
+            this.Origin = otherParams.Origin;
+            this.OutlineLabel = otherParams.OutlineLabel;
+        }
+
+        public DividerParams()
+        { }
+
+        //property
+        public DividingLine Divider { get; set; }
+        public DividingOrigin Origin { get; set; }
+        public LabeledOutline OutlineLabel { get; set; }
+    }
+
+    //enum
+    public enum LineType { Core, Corridor, Outer, Inner } 
+    // 선타입 - 코어, 복도, 외벽, 내벽
+
+    public enum corridorType { SH, SV, DH1, DH2, DV } 
+    //복도타입 - S:single 편복도, D: double 중복도, H: 횡축, V: 종축, 1:단방향, 2:양방향
 }

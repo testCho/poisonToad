@@ -9,9 +9,13 @@ namespace patternTest
 {
     public static class Extended
     {
+        //curve extended
         public static bool IsOverlap(this Curve curve, Curve otherCurve)
         {
             var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve, curve, 0, 0);
+            if (tempIntersection.Count == 0)
+                return false;
+
             foreach (var i in tempIntersection)
             {
                 if (i.IsOverlap)
@@ -26,6 +30,9 @@ namespace patternTest
             foreach (Curve i in otherCurves)
             {
                 var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve, i, 0, 0);
+                if (tempIntersection.Count == 0)
+                    return false;
+
                 foreach (var j in tempIntersection)
                 {
                     if (j.IsOverlap)
@@ -35,6 +42,7 @@ namespace patternTest
             return false;
         }
 
+        //polyline extended
         public static void AlignCC(this Polyline polyline)
         {
             if (polyline.ToNurbsCurve().ClosedCurveOrientation(Vector3d.ZAxis) == CurveOrientation.CounterClockwise)

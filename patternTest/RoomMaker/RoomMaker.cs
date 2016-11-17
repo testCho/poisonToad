@@ -9,20 +9,26 @@ namespace patternTest
 {
     class RoomMaker
     {
-
         //main method
         public List<Polyline> MakeRoom(List<double> roomAreaSet, Polyline outline, Core core)
         {
             List<Polyline> rooms = new List<Polyline>();
 
-            Line baseLine = CorridorBaseMaker.SearchBaseLine(core);
+            //CorridorMaker class 안에서 해결할 것.. //
+            Line baseLine = CorridorMaker.SearchBaseLine(core);
             List<Line> subAxis = new List<Line>();
-            List<Line> baseAxis = CorridorBaseMaker.SetBaseAxis(outline, core, baseLine, out subAxis);
+            List<Line> baseAxis = CorridorMaker.SetBaseAxis(outline, core, baseLine, out subAxis);
 
             List<corridorType> availableTypes = DetectCorridorType(outline, core, baseAxis, subAxis);
+            List<Polyline> corridor = new List<Polyline>();
+            //여기까지//
+
+            LabeledOutline outlineLabel = Labeler.GetOutlineLabel(outline, core, corridor);
+            rooms = PartitionMaker.DrawPartitions(outlineLabel, roomAreaSet);
 
             return rooms;
         }
+
 
         //method
         private static List<corridorType> DetectCorridorType(Polyline outline, Core core, List<Line> baseAxis, List<Line> subAxis)
@@ -59,11 +65,4 @@ namespace patternTest
         }
 
     }
-
-    //enum
-    public enum LineType { Core, Corridor, Outer, Inner } // 선타입 - 코어, 복도, 외벽, 내벽
-    public enum corridorType { SH, SV, DH1, DH2, DV } //복도타입 - S:single 편복도, D: double 중복도, H: 횡축, V: 종축, 1:단방향, 2:양방향
-
-    //data structure class
-
 }

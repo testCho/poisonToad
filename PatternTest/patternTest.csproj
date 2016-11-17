@@ -44,23 +44,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataStructure\verbose.cs" />
-    <Compile Include="FloorMaker\PartitionBaseMaker.cs" />
-    <Compile Include="ToolClass\FakeTools.cs" />
-    <Compile Include="FloorMaker\CorridorBaseMaker.cs" />
-    <Compile Include="DataStructure\FloorDS.cs" />
-    <Compile Include="FloorMaker\Labeler.cs" />
-    <Compile Include="FloorMaker\PartitionMaker.cs" />
-    <Compile Include="FloorMaker\RoomMaker.cs" />
-    <Compile Include="ToolClass\Extend.cs" />
-    <Compile Include="FloorMaker\CorridorPattern\Pattern1S.cs" />
-    <Compile Include="FloorMaker\CorridorPattern\Pattern2S.cs" />
-    <Compile Include="FloorMaker\CorridorPattern\Pattern3D.cs" />
-    <Compile Include="FloorMaker\CorridorPattern\Pattern4S.cs" />
+    <Compile Include="RoomMaker\PartitionMaker\DividerDrawer.cs" />
+    <Compile Include="RoomMaker\PartitionMaker\DividerSetter.cs" />
+    <Compile Include="DataStructure\Issue.cs" />
+    <Compile Include="Tools\FakeTools.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\CorridorMaker.cs" />
+    <Compile Include="DataStructure\RoomDS.cs" />
+    <Compile Include="RoomMaker\Labeler.cs" />
+    <Compile Include="RoomMaker\PartitionMaker\PartitionMaker.cs" />
+    <Compile Include="RoomMaker\RoomMaker.cs" />
+    <Compile Include="Tools\Extend.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Pattern1S.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Pattern2S.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Pattern3D.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Pattern4S.cs" />
     <Compile Include="patternTestCommand.cs" />
     <Compile Include="patternTestPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ToolClass\Tools.cs" />
+    <Compile Include="Tools\Tools.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

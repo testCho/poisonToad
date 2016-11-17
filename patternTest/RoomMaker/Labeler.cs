@@ -9,7 +9,23 @@ namespace patternTest
 {
     class Labeler
     {
-        private static Polyline TrimOuterByCoreUnion(Polyline outline, Core core, List<Polyline> corridor, out Polyline unionPoly)
+        public static LabeledOutline GetOutlineLabel(Polyline outline, Core core, List<Polyline> corridor)
+        {
+            // 차집합
+            Polyline coreUnion = new Polyline();
+            Polyline outlineTrimmed = GetOutlineCoreDiff(outline, core, corridor, out coreUnion);
+
+            // 순수 외곽선
+            Polyline outlinePure = TrimDiffByCore(outlineTrimmed, coreUnion);
+
+            // 코어 
+            Polyline coreTrimmed = TrimCoreByOutline(outline, coreUnion);
+            List<RoomLine> coreSegments = LabelUnionSeg(coreTrimmed, core, corridor);
+
+            return new LabeledOutline(outlineTrimmed, outlinePure, coreSegments);
+        }
+
+        private static Polyline GetOutlineCoreDiff(Polyline outline, Core core, List<Polyline> corridor, out Polyline coreUnion)
         {
             List<Polyline> trimmedOutline = new List<Polyline>();
 
@@ -26,26 +42,44 @@ namespace patternTest
                 trimmedOutline.Add(CurveTools.ToPolyline(i));
             trimmedOutline.Sort((x, y) => -PolylineTools.GetArea(x).CompareTo(PolylineTools.GetArea(y)));
 
-            unionPoly = CurveTools.ToPolyline(union);
+            coreUnion = CurveTools.ToPolyline(union);
             return trimmedOutline[0];
         }
 
-        private static Polyline TrimCoreUnionByOuter(Polyline outline, Polyline coreUnion)
+        private static Polyline TrimCoreByOutline(Polyline outline, Polyline coreUnion)
         {
-            Polyline roomBase = new Polyline();
-            List<Curve> candidateToJoin = new List<Curve>();
+            Polyline pureCore = new Polyline();
+            List<Curve> memberToJoin = new List<Curve>();
 
             Curve outlineCrv = outline.ToNurbsCurve();
-            List<Curve> unionSeg = coreUnion.ToNurbsCurve().DuplicateSegments().ToList();
+            List<Curve> coreSeg = coreUnion.ToNurbsCurve().DuplicateSegments().ToList();
 
-            foreach (Curve i in unionSeg)
+            foreach (Curve i in coreSeg)
             {
                 if (!i.IsOverlap(outlineCrv))
-                    candidateToJoin.Add(i);
+                    memberToJoin.Add(i);
             }
 
-            roomBase = CurveTools.ToPolyline(Curve.JoinCurves(candidateToJoin)[0]);
-            return roomBase;
+            pureCore = CurveTools.ToPolyline(Curve.JoinCurves(memberToJoin)[0]);
+            return pureCore;
+        }
+
+        private static Polyline TrimDiffByCore(Polyline difference, Polyline coreUnion)
+        {
+            Polyline pureOutline = new Polyline();
+            List<Curve> memberToJoin = new List<Curve>();
+
+            Curve coreCrv = coreUnion.ToNurbsCurve();
+            List<Curve> outlineSeg = difference.ToNurbsCurve().DuplicateSegments().ToList();
+
+            foreach (Curve i in outlineSeg)
+            {
+                if (!i.IsOverlap(coreCrv))
+                    memberToJoin.Add(i);
+            }
+
+            pureOutline = CurveTools.ToPolyline(Curve.JoinCurves(memberToJoin)[0]);
+            return pureOutline;
         }
 
         //코어 세그먼트가 너무 길어서 코어와 랜딩에 동시에 닿는 경우 처리 필요..
@@ -75,6 +109,5 @@ namespace patternTest
 
             return labeledRoomBase;
         }
-
     }
 }

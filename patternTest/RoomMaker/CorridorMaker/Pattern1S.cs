@@ -121,7 +121,7 @@ namespace patternTest
             if (anchorLineLength < mainAxis[1].Length)
                 anchor2Center = anchor1 + mainAxis[1].UnitTangent * (anchorLineLength - Corridor.OneWayWidth / 2) *lengthFactor;
             else
-                anchor2Center = anchor1 + mainAxis[1].UnitTangent*(mainAxis[1].Length- Corridor.OneWayWidth / 2) *lengthFactor;
+                anchor2Center = anchor1 + mainAxis[1].UnitTangent * (mainAxis[1].Length- Corridor.OneWayWidth / 2) *lengthFactor;
 
             anchor2 = anchor2Center; //임시
 

@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class CorridorBaseMaker
+    class CorridorMaker
     {
         public static Line SearchBaseLine(Core core)
         {
