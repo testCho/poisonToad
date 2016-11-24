@@ -45,9 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RoomMaker\PartitionMaker\DividerDrawer.cs" />
+    <Compile Include="RoomMaker\PartitionMaker\DividerMaker.cs" />
     <Compile Include="RoomMaker\PartitionMaker\DividerSetter.cs" />
     <Compile Include="DataStructure\Issue.cs" />
-    <Compile Include="Tools\FakeTools.cs" />
     <Compile Include="RoomMaker\CorridorMaker\CorridorMaker.cs" />
     <Compile Include="DataStructure\RoomDS.cs" />
     <Compile Include="RoomMaker\Labeler.cs" />

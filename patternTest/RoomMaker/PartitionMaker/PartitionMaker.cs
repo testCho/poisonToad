@@ -21,12 +21,10 @@ namespace patternTest
 
             for (int i = 0; i < scaledAreas.Count; i++)
             {
-                DividerParams paramNext = new DividerParams();
+                DividerMaker.DivMakerOutput eachPartition = DividerMaker.DrawEachPartition(paramInitial, scaledAreas[i]);
+                partitionList.Add(eachPartition.Poly);
 
-                Polyline eachPartition = DividerDrawer.DrawEachPartition(paramInitial, scaledAreas[i], out paramNext);
-                partitionList.Add(eachPartition);
-
-                paramInitial = paramNext;
+                paramInitial = eachPartition.DivParams;
             }
 
             return partitionList;
@@ -50,7 +48,7 @@ namespace patternTest
 
         }
 
-        //outline과 겹치는 경우 해결 요
+        //outline과 겹치는 경우 해결 요, isOverlap 참고
         private static DividingLine DrawInitialDivider(RoomLine firstRoomLine, Polyline outlinePure)
         {
             DividingOrigin originInitial = new DividingOrigin(firstRoomLine.Liner.PointAt(0), firstRoomLine);
@@ -62,6 +60,7 @@ namespace patternTest
             return dividerInitial;
         }
 
+        
     }
 
 }

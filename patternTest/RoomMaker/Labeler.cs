@@ -9,6 +9,7 @@ namespace patternTest
 {
     class Labeler
     {
+        //main
         public static LabeledOutline GetOutlineLabel(Polyline outline, Core core, List<Polyline> corridor)
         {
             // 차집합
@@ -25,6 +26,8 @@ namespace patternTest
             return new LabeledOutline(outlineTrimmed, outlinePure, coreSegments);
         }
 
+
+        //method
         private static Polyline GetOutlineCoreDiff(Polyline outline, Core core, List<Polyline> corridor, out Polyline coreUnion)
         {
             List<Polyline> trimmedOutline = new List<Polyline>();

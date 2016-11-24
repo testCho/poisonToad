@@ -27,104 +27,161 @@ namespace patternTest
             return nearestCorridor;
         }
 
-        public static void SetNextDivOrigin(DividerParams dividerParam)
+        public static void SetNextDivOrigin(DividerParams setterParam)
         {
-            if (dividerParam.Origin.Type != LineType.Corridor)
+            if (!IsCorridorAvailable(setterParam))
             {
-                SetOriginFromCore(dividerParam);
+                FindMinCorridor(setterParam);
                 return;
             }
 
-            if (dividerParam.Divider.Lines.Count > 1)
+            if (setterParam.DividerPre.Lines.Count > 1)
             {
-                SetOriginFromFoldedDiv(dividerParam);
+                SetOriginFromFoldedDiv(setterParam);
                 return;
             }
 
-            SetOriginFromSingleDiv(dividerParam);
+            SetOriginFromSingleDiv(setterParam);
             return;
         }
 
 
         //method
-        private static void SetOriginFromCore(DividerParams dividerParam)
+        /*111공통된 부분 줄일 수 있음.. 일단은 구현*/
+        private static void FindMinCorridor(DividerParams setterParam)
         {
-            RoomLine nearestCorridor = FindNearestCorridor(dividerParam.OutlineLabel.Core, dividerParam.Origin.BaseLine);
-            DividingOrigin originNext = new DividingOrigin(nearestCorridor.Liner.PointAt(0), nearestCorridor);
-            dividerParam.Origin = originNext;
-
-            SetNextDivOrigin(dividerParam);
-            return;
-        }
-
-        private static void SetOriginFromSingleDiv(DividerParams dividerParam)
-        {
-            if (dividerParam.Divider.Origin.Liner == dividerParam.Origin.Liner)
+            RoomLine nearestCorridor = FindNearestCorridor(setterParam.OutlineLabel.Core, setterParam.OriginPost.BaseLine);
+            if (setterParam.OriginPost.Liner == nearestCorridor.Liner)
             {
-                SetOriginFromSameBase(dividerParam);
+                FindCorrFromSameBase(setterParam);
+                return;
+            }
+      
+            if(nearestCorridor.Length < Corridor.MinLengthForDoor)
+            {
+                SetOriginNextStart(setterParam);
+                SetNextDivOrigin(setterParam);
                 return;
             }
 
-            SetOriginFromOtherBase(dividerParam);
+            Point3d nearestBase = nearestCorridor.PointAt(0);
+            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
+
+            DividingOrigin originNext = new DividingOrigin(baseWithMinCorridor, nearestCorridor);
+
+            SetNextDivOrigin(setterParam);
             return;
         }
 
-        private static void SetOriginFromFoldedDiv(DividerParams dividerParam)
+        private static void FindCorrFromSameBase(DividerParams setterParam)
         {
-            Vector3d secondDirec = dividerParam.Divider.Lines[1].UnitTangent;
+            RoomLine nearestCorridor = setterParam.OriginPost.BaseLine;
 
-            if (IsCCwPerp(dividerParam.Divider.FirstDirec, secondDirec))
+            double originToCorridorEnd = new Vector3d(nearestCorridor.PointAt(1)- setterParam.OriginPost.Point).Length;
+
+            if(originToCorridorEnd<Corridor.MinLengthForDoor)
             {
-                SetOriginFromSingleDiv(dividerParam);
+                SetOriginNextStart(setterParam);
+                SetNextDivOrigin(setterParam);
                 return;
             }
 
-            if (secondDirec.IsParallelTo(dividerParam.Origin.Liner.UnitTangent) == 1)
+            Point3d nearestBase = setterParam.OriginPost.Point;
+            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
+
+            DividingOrigin originNext = new DividingOrigin(baseWithMinCorridor, nearestCorridor);
+
+            SetNextDivOrigin(setterParam);
+            return;
+        }
+        /* 여기까지111*/
+
+        private static void SetOriginNextStart(DividerParams setterParam)
+        {
+            int currentIndex = setterParam.OutlineLabel.Core.FindIndex
+                   (i => (i.Liner == setterParam.OriginPost.Liner));
+
+            if (currentIndex == setterParam.OutlineLabel.Core.Count - 1)
+                return;
+
+            RoomLine baseLineNext = setterParam.OutlineLabel.Core[currentIndex + 1];
+            setterParam.OriginPost = new DividingOrigin(baseLineNext.PointAt(0), baseLineNext);
+
+            return;
+        }
+
+        private static void SetOriginFromSingleDiv(DividerParams setterParam)
+        {
+            if (setterParam.DividerPre.Origin.Liner == setterParam.OriginPost.Liner)
             {
-                SetOriginFromOtherBase(dividerParam);
+                SetOriginFromSameBase(setterParam);
+                return;
+            }
+
+            SetOriginFromOtherBase(setterParam);
+            return;
+        }
+
+        private static void SetOriginFromFoldedDiv(DividerParams setterParam)
+        {
+            Vector3d secondDirec = setterParam.DividerPre.Lines[1].UnitTangent;
+
+            if (IsCCwPerp(setterParam.DividerPre.FirstDirec, secondDirec))
+            {
+                SetOriginFromSingleDiv(setterParam);
+                return;
+            }
+
+            if (secondDirec.IsParallelTo(setterParam.OriginPost.Liner.UnitTangent) == 1)
+            {
+                SetOriginFromOtherBase(setterParam);
                 return;
             }
 
             return;
         }
 
-        private static void SetOriginFromSameBase(DividerParams dividerParam)
+        private static void SetOriginFromSameBase(DividerParams setterParam)
         {
-            if (dividerParam.Divider.Origin.Point == dividerParam.Origin.Point)
-                return;
-
-            if (IsEndPt(dividerParam.Origin))
-                return;
-
-            SetOriginFromEndPt(dividerParam);
-            return;
-        }
-
-        /*추가해야함 - 수선*/
-        private static void SetOriginFromOtherBase(DividerParams dividerParam)
-        {
-            if(IsCrossed(dividerParam.Divider, dividerParam.Origin))
+            if (IsEndPt(setterParam.OriginPost))
             {
-                //can make perpLine??
-
-                int originCurrentIndex = dividerParam.OutlineLabel.Core.FindIndex
-                    (i => (i.Liner == dividerParam.Origin.Liner));
-
-                RoomLine lineNext = dividerParam.OutlineLabel.Core[originCurrentIndex + 1];
-                dividerParam.Origin = new DividingOrigin(lineNext.Liner.PointAt(0), lineNext);
+                SetOriginFromEndPt(setterParam);
                 return;
             }
 
+            return; 
+        }
+
+        private static void SetOriginFromOtherBase(DividerParams setterParam)
+        {
+            if(IsCrossed(setterParam.DividerPre, setterParam.OriginPost))
+            {
+                Point3d perpPt = MakePerpPt(setterParam.DividerPre, setterParam.OriginPost);
+
+                if (IsOnOriginBase(perpPt, setterParam.OriginPost))
+                {
+                    if (perpPt != setterParam.OriginPost.BaseLine.PointAt(1))
+                    {
+                        setterParam.OriginPost.Point = perpPt;
+                        return;
+                    }
+                }
+
+                SetOriginFromPerpNext(setterParam);
+                return;
+            }
+
+            SetOriginFromSameBase(setterParam);
             return;
         }
 
-        private static void SetOriginFromEndPt(DividerParams dividerParam)
+        private static void SetOriginFromEndPt(DividerParams setterParam)
         {
-            int testIndex = dividerParam.OutlineLabel.Core.FindIndex
-                (i => (i.Liner == dividerParam.Origin.Liner));
+            int testIndex = setterParam.OutlineLabel.Core.FindIndex
+                (i => (i.Liner == setterParam.OriginPost.Liner));
 
-            RoomLine formerCornerLine = dividerParam.OutlineLabel.Core[testIndex];
-            RoomLine laterCornerLine = dividerParam.OutlineLabel.Core[testIndex + 1];
+            RoomLine formerCornerLine = setterParam.OutlineLabel.Core[testIndex];
+            RoomLine laterCornerLine = setterParam.OutlineLabel.Core[testIndex + 1];
 
             DividingOrigin laterStart = new DividingOrigin(laterCornerLine.Liner.PointAt(0),laterCornerLine);
             DividingOrigin laterEnd = new DividingOrigin(laterCornerLine.Liner.PointAt(1),laterCornerLine);
@@ -133,18 +190,95 @@ namespace patternTest
 
             if (cornerStat == CornerState.Concave)
             {
-                dividerParam.Origin = laterEnd;
-                SetNextDivOrigin(dividerParam);
+                setterParam.OriginPost = laterEnd;
+                SetNextDivOrigin(setterParam);
                 return;
             }
 
-            dividerParam.Origin = laterStart;
-            SetNextDivOrigin(dividerParam);
+            setterParam.OriginPost = laterStart;
+            SetNextDivOrigin(setterParam);
+            return;
+        }
+
+        /*new Vector()에서 setterParam이 deepCopy 안될수도..*/
+        private static void SetOriginFromPerpNext(DividerParams setterParam)
+        {
+            Vector3d cornerPre = new Vector3d(setterParam.OriginPost.Liner.UnitTangent);
+            SetOriginNextStart(setterParam);
+            Vector3d cornerPost = setterParam.OriginPost.Liner.UnitTangent;
+
+            CornerState cornerStat = GetCCWCornerState(cornerPre, cornerPost);
+
+            if (cornerStat == CornerState.Convex)
+                return;
+
+            SetNextDivOrigin(setterParam);
             return;
         }
 
 
         //decider method
+        private static Boolean IsCorridorAvailable(DividerParams setterParam)
+        {
+            int dividerIndex = setterParam.OutlineLabel.Core.FindIndex
+                (i => i.Liner == setterParam.DividerPre.Origin.Liner);
+
+            int originIndex = setterParam.OutlineLabel.Core.FindIndex
+                (i => i.Liner == setterParam.OriginPost.Liner);
+
+            if (dividerIndex == originIndex)
+                return IsAvailableOnSameBase(setterParam);
+
+            return IsAvailableOnOtherBase(setterParam, dividerIndex, originIndex);
+        }
+
+        private static Boolean IsAvailableOnOtherBase(DividerParams setterParam, int dividerIndex, int originIndex)
+        {
+            List<RoomLine> coreSeg = setterParam.OutlineLabel.Core;
+            if (coreSeg[dividerIndex].Type == LineType.Corridor)
+            {
+                double toEndLength = 
+                    new Vector3d(coreSeg[dividerIndex].EndPt - setterParam.DividerPre.Origin.Point).Length;
+
+                if (toEndLength >= Corridor.MinLengthForDoor)
+                    return true;
+            }
+
+            if(coreSeg[originIndex].Type == LineType.Corridor)
+            {
+                double toStartLength =
+                   new Vector3d(setterParam.OriginPost.Point- coreSeg[dividerIndex].StartPt).Length;
+
+                if (toStartLength >= Corridor.MinLengthForDoor)
+                    return true;
+            }
+
+            if (originIndex - dividerIndex > 1)
+            {
+                for(int i = originIndex+1; i<dividerIndex; i++)
+                {
+                    if ((coreSeg[i].Type == LineType.Corridor) &&
+                        (coreSeg[i].Length >= Corridor.MinLengthForDoor))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static Boolean IsAvailableOnSameBase(DividerParams setterParam)
+        {
+            if (setterParam.OriginPost.Type != LineType.Corridor)
+                return false;
+
+            double dividerToOrigin = new Vector3d(setterParam.OriginPost.Point - setterParam.DividerPre.Origin.Point).Length;
+
+            if (dividerToOrigin < Corridor.MinLengthForDoor)
+                return false;
+
+            return true;
+        }
+
         private static Boolean IsCCwPerp(Vector3d tester, Vector3d testee)
         {
             Vector3d testVector = VectorTools.RotateVectorXY(tester, Math.PI/2);
@@ -181,13 +315,57 @@ namespace patternTest
             return false;     
         }
 
-        /*추가해야함*/
-        private static Boolean CanMakePerpPt(DividingLine dividerTest, DividingOrigin originTest)
+        private static Point3d MakePerpPt(DividingLine dividerTest, DividingOrigin originTest)
         {
+            //dSide: divider 쪽, oSide: origin 쪽
+            Point3d dSidePt = dividerTest.Lines[dividerTest.Lines.Count - 1].PointAt(1);
+            Vector3d dSideDirection = -originTest.BaseLine.UnitNormal;
+
+            Point3d oSidePt = originTest.Point;
+            Vector3d oSideDirection = originTest.BaseLine.UnitTangent;
+
+            //ABC is coefficient of linear Equation, Ax+By=C 
+            double dSideA = dSideDirection.Y;
+            double dSideB = -dSideDirection.X;
+            double dSideC = dSideA * dSidePt.X + dSideB * dSidePt.Y;
+
+            double oSideA = oSideDirection.Y;
+            double oSideB = -oSideDirection.X;
+            double oSideC = oSideA * oSidePt.X + oSideB * oSidePt.Y;
+
+            //det=0: isParallel, 평행한 경우
+            double detTolerance = 0.005;
+            double det = dSideA * oSideB - dSideB * oSideA;
+
+            if (Math.Abs(det) < detTolerance)
+                return Point3d.Unset;
+
+            double perpX = (oSideB * dSideC - dSideB * oSideC) / det;
+            double perpY = (dSideA * oSideC - oSideA * dSideC) / det;
+
+            return new Point3d(perpX, perpY, 0);
+        }
+
+        private static Boolean IsOnOriginBase(Point3d ptTest, DividingOrigin originTest)
+        {
+            if (ptTest == Point3d.Unset)
+                return false;
+
+            Point3d oStart = originTest.Point;
+            Point3d oEnd = originTest.BaseLine.PointAt(1);
+
+            //isOnOriginTest
+            double onTolerance = 0.000;
+            bool isSatisfyingX = (ptTest.X - (oStart.X - onTolerance)) * ((oEnd.X + onTolerance) - ptTest.X) >= 0;
+            bool isSatisfyingY = (ptTest.Y - (oStart.Y - onTolerance)) * ((oEnd.Y + onTolerance) - ptTest.Y) >= 0;
+
+            if (isSatisfyingX && isSatisfyingY)
+                return true;
+
             return false;
         }
 
-        private static CornerState GetCCWCornerState(Vector3d formerCornerLine, Vector3d laterCornerLine)
+        public static CornerState GetCCWCornerState(Vector3d formerCornerLine, Vector3d laterCornerLine)
         {
             formerCornerLine.Unitize();
             laterCornerLine.Unitize();
@@ -202,8 +380,7 @@ namespace patternTest
             return CornerState.Straight;
         }
 
-
         //enum
-        private enum CornerState { Convex, Concave, Straight };
+        public enum CornerState { Convex, Concave, Straight };
     }
 }
