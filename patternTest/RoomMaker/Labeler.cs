@@ -7,6 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
+    //위상이 다른 경우도 표현 가능해야함!! (선, 도넛, 섬)
     class Labeler
     {
         //main

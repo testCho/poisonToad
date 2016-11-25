@@ -200,7 +200,6 @@ namespace patternTest
             return;
         }
 
-        /*new Vector()에서 setterParam이 deepCopy 안될수도..*/
         private static void SetOriginFromPerpNext(DividerParams setterParam)
         {
             Vector3d cornerPre = new Vector3d(setterParam.OriginPost.Liner.UnitTangent);

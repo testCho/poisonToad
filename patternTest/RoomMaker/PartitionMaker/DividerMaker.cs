@@ -139,7 +139,9 @@ namespace patternTest
         }
 
         private static DivMakerOutput DrawAtLastBase(DividerParams param)
-        { }
+        {
+
+        }
 
         //tool method
         private static DivMakerOutput DrawOrtho(DividerParams param)
