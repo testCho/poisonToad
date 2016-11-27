@@ -17,133 +17,83 @@ namespace patternTest
             DividerSetter.SetNextDivOrigin(tempParam);
 
             if (IsOverlap(tempParam))
-                return DrawAtSeperated(param, targetArea);
+                MoveOriginProperly(tempParam);
 
-            return DrawAtOverlap(param, targetArea);
-        }
+            //마지막 세그먼트 판정을 여기서 해줘도 될듯
+            if (IsConcave(param))
+                return DrawAtConcave(param, targetArea);
 
-
-        //inner dateClass
-        public class DivMakerOutput
-        {
-            public DivMakerOutput(Polyline polyline, DividerParams paramNext)
-            {
-                this.Poly = polyline;
-                this.DivParams = paramNext;
-            }
-
-            public DivMakerOutput()
-            { }
-
-            public DivMakerOutput(DivMakerOutput otherOutput)
-            {
-                this.Poly = otherOutput.Poly;
-                this.DivParams = new DividerParams(otherOutput.DivParams);
-            }
-
-            //property
-            public Polyline Poly { get; set; }
-            public DividerParams DivParams { get; set; }
+            return DrawAtThisBaseEnd(param, targetArea);
         }
 
 
         //sub method
-        private static DivMakerOutput DrawAtSeperated(DividerParams param, double targetArea)
+        private static DivMakerOutput DrawAtConcave(DividerParams param, double targetArea)
         {
-            DivMakerOutput tempOutput = DrawOrtho(param);
+            param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+            DivMakerOutput thisEndOutput = DrawOrtho(param);
 
-            if (HasEnoughArea(tempOutput,targetArea))
+            if (HasEnoughArea(thisEndOutput, targetArea))
             {
-                param.OriginPost.Point = param.OriginPost.BaseLine.PointAt(1);
-                if (IsConcave(param))
-                    return DrawAtConcaveCorner(param, targetArea);
+                DividerParams tempOutput1 = new DividerParams(param);
+                DividerParams tempOutput2 = new DividerParams(param);
+                SetPostStartToOrigin(tempOutput2);
+                List<DivMakerOutput> outputCandidate = new List<DivMakerOutput>();
+                outputCandidate.Add(DrawAtStraight(tempOutput1, targetArea));
+                outputCandidate.Add(DrawEachPartition(tempOutput2, targetArea));
 
-                tempOutput.DivParams.PostToPre();
-                return tempOutput;
+                return SelectBetterDivider(outputCandidate);
             }
 
-            return DrawAtOverlap(param, targetArea);
+            return DrawEachPartition(param, targetArea);
         }
 
-        private static DivMakerOutput DrawAtOverlap(DividerParams param, double targetArea)
+        private static DivMakerOutput DrawAtThisBaseEnd(DividerParams param, double targetArea)
         {
-            param.OriginPost.Point = param.OriginPost.BaseLine.PointAt(1);
+            param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+            DivMakerOutput thisEndOutput = DrawOrtho(param);
 
-            if (IsConcave(param))
-                return DrawAtConcave(param, targetArea);
+            if (HasEnoughArea(thisEndOutput, targetArea))
+                return DrawAtStraight(param, targetArea);
 
-            DivMakerOutput tempOutput = DrawOrtho(param);
-
-            if (HasEnoughArea(tempOutput,targetArea))
-                return DrawOnThisBase(param, targetArea);
-
-            return DrawAtConvex(param, targetArea);
+            return DrawAtConvexCorner(param, targetArea);
         }
 
-        private static DivMakerOutput DrawOnThisBase(DividerParams param, double targetArea)
-        {
+        private static DivMakerOutput DrawAtStraight(DividerParams param, double targetArea)
+        { 
             DivMakerOutput binaryOutput = DrawByBinarySearch(param, targetArea);
 
-            if (IsCloseToStart(binaryOutput.DivParams))
-            {
-                DivMakerOutput pushStartOutput = PushOriginToStart(binaryOutput.DivParams);
-                pushStartOutput.DivParams.PostToPre();
-                return pushStartOutput;
-            }
-
-
             if (IsCloseToEnd(binaryOutput.DivParams))
-            {
-                DivMakerOutput pushEndOutput = PushOriginToEnd(binaryOutput.DivParams);
-                pushEndOutput.DivParams.PostToPre();
-                return pushEndOutput;
-            }
+                return PushOriginToEnd(binaryOutput.DivParams);
+            else if (IsCloseToStart(binaryOutput.DivParams))
+                return PushOriginToStart(binaryOutput.DivParams);
 
-            binaryOutput.DivParams.PostToPre();
             return binaryOutput;
-        }
-
-        private static DivMakerOutput DrawAtConvex(DividerParams param, double targetArea) //볼록 코너 테스트..
-        {
-            SetPostStartToOrigin(param);
-            DivMakerOutput tempOutput = DrawOrtho(param);
-
-            if (HasEnoughArea(tempOutput, targetArea))
-                return DrawAtConvexCorner(param, targetArea);
-
-            return DrawEachPartition(param, targetArea);
-        }
-
-        private static DivMakerOutput DrawAtConcave(DividerParams param, double targetArea) //고쳐야함.. 오목 코너 테스트 형식..
-        {
-            SetPostStartToOrigin(param);
-            DivMakerOutput tempOutput = DrawOrtho(param);
-
-            if (HasEnoughArea(tempOutput, targetArea))
-            {
-                SetPreEndToOrigin(param);
-                return DrawOnThisBase(param, targetArea); //시작점이 다른 코어선 위에 있어서 처리 필요.. 
-            }
-
-            return DrawEachPartition(param, targetArea);
         }
 
         private static DivMakerOutput DrawAtConvexCorner(DividerParams param, double targetArea)
         {
+            //마지막 세그먼트를 여기서 처리해줘도 괜찮을 듯
+            SetPostStartToOrigin(param);
+            DivMakerOutput straightOutput = DrawOrtho(param);
 
+            if (HasEnoughArea(straightOutput, targetArea))
+                return DrawAtCorner(param, targetArea);
+
+            return DrawEachPartition(param, targetArea);
         }
 
-        private static DivMakerOutput DrawAtConcaveCorner(DividerParams param, double targetArea)
+        private static DivMakerOutput DrawAtCorner(DividerParams param, double targetArea)
         {
-
-        }
-
-        private static DivMakerOutput DrawAtLastBase(DividerParams param)
-        {
-
+            
         }
 
         //tool method
+        private static void MoveOriginProperly(DividerParams param)
+        {
+
+        }
+
         private static DivMakerOutput DrawOrtho(DividerParams param)
         {
             Line orthoLine = PCXTools.ExtendFromPt(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
@@ -284,6 +234,10 @@ namespace patternTest
             return;
         }
 
+        private static DivMakerOutput SelectBetterDivider(List<DivMakerOutput> outputCandidate)
+        { }
+
+
         //decider method
         private static Boolean IsOverlap(DividerParams param)
         {
@@ -368,5 +322,27 @@ namespace patternTest
             return false;
         }
 
+        //inner dateClass
+        public class DivMakerOutput
+        {
+            public DivMakerOutput(Polyline polyline, DividerParams paramNext)
+            {
+                this.Poly = polyline;
+                this.DivParams = paramNext;
+            }
+
+            public DivMakerOutput()
+            { }
+
+            public DivMakerOutput(DivMakerOutput otherOutput)
+            {
+                this.Poly = otherOutput.Poly;
+                this.DivParams = new DividerParams(otherOutput.DivParams);
+            }
+
+            //property
+            public Polyline Poly { get; set; }
+            public DividerParams DivParams { get; set; }
+        }
     }
 }
