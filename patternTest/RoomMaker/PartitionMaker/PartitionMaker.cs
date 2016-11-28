@@ -48,8 +48,7 @@ namespace patternTest
 
         }
 
-        //outline과 겹치는 경우 해결 요, isOverlap 참고
-        //다음라인에서 그려본 다음 길이가 짧은 쪽부터 시작
+        //다음라인에서 그려본 다음 길이가 짧은 쪽부터 시작 <- 할 필요 없을 듯
         private static DividingLine DrawInitialDivider(RoomLine firstRoomLine, Polyline outlinePure)
         {
             DividingOrigin originInitial = new DividingOrigin(firstRoomLine.Liner.PointAt(0), firstRoomLine);

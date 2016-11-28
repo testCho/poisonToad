@@ -847,9 +847,15 @@ namespace patternTest
 
             List<Point3d> intersectedPts = new List<Point3d>();
             foreach (var i in layIntersection)
-                intersectedPts.Add(i.PointA);
+            {
+                if (i.IsOverlap)
+                    intersectedPts.Add(i.PointA2);
+                else if (i.PointA != basePt)
+                    intersectedPts.Add(i.PointA);
+            }
 
             intersectedPts.Sort((x, y) => basePt.DistanceTo(x).CompareTo(basePt.DistanceTo(y)));
+
             output = new Line(basePt, intersectedPts[0]);
 
             return output;
