@@ -21,14 +21,14 @@ namespace patternTest
 
             //마지막 세그먼트 판정을 여기서 해줘도 될듯
             if (IsConcave(param))
-                return DrawAtConcave(param, targetArea);
+                return DrawAtConcaveCorner(param, targetArea);
 
             return DrawAtThisBaseEnd(param, targetArea);
         }
 
 
         //sub method
-        private static DivMakerOutput DrawAtConcave(DividerParams param, double targetArea)
+        private static DivMakerOutput DrawAtConcaveCorner(DividerParams param, double targetArea)
         {
             param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
             DivMakerOutput thisEndOutput = DrawOrtho(param);
@@ -42,9 +42,10 @@ namespace patternTest
                 outputCandidate.Add(DrawAtStraight(tempOutput1, targetArea));
                 outputCandidate.Add(DrawEachPartition(tempOutput2, targetArea));
 
-                return SelectBetterDivider(outputCandidate);
+                return SelectBetterDivider(outputCandidate, targetArea);
             }
 
+            SetPostParallelToOrigin(param);
             return DrawEachPartition(param, targetArea);
         }
 
@@ -55,6 +56,9 @@ namespace patternTest
 
             if (HasEnoughArea(thisEndOutput, targetArea))
                 return DrawAtStraight(param, targetArea);
+
+            if (IsLastSegment(param))
+                return thisEndOutput;
 
             return DrawAtConvexCorner(param, targetArea);
         }
@@ -73,28 +77,81 @@ namespace patternTest
 
         private static DivMakerOutput DrawAtConvexCorner(DividerParams param, double targetArea)
         {
-            //마지막 세그먼트를 여기서 처리해줘도 괜찮을 듯
             SetPostStartToOrigin(param);
             DivMakerOutput straightOutput = DrawOrtho(param);
 
             if (HasEnoughArea(straightOutput, targetArea))
-                return DrawAtCorner(param, targetArea);
+                return TestAtCorner(param, targetArea);
 
             return DrawEachPartition(param, targetArea);
         }
 
-        private static DivMakerOutput DrawAtCorner(DividerParams param, double targetArea)
+        private static DivMakerOutput TestAtCorner(DividerParams param, double targetArea)
         {
-            
+            DividerParams tempParam1 = new DividerParams(param);
+            DivMakerOutput cornerOutput = CornerMaker.GetCorner(tempParam1, targetArea);
+
+            if (IsConcave(param))
+            {
+                List<DivMakerOutput> outputCandidate = new List<DivMakerOutput>();
+                DividerParams tempParam2 = new DividerParams(param);
+                SetPostStartToOrigin(tempParam2);
+                outputCandidate.Add(cornerOutput);
+                outputCandidate.Add(DrawEachPartition(tempParam2, targetArea));
+
+                return SelectBetterDivider(outputCandidate, targetArea);
+            }
+
+            return cornerOutput;
         }
+
 
         //tool method
         private static void MoveOriginProperly(DividerParams param)
         {
+            List<RoomLine> coreSeg = param.OutlineLabel.Core;
+            int originIndex = coreSeg.FindIndex(i => i.Liner == param.OriginPost.Liner);
+            int coreSegCount = coreSeg.Count();
 
+            if (originIndex == coreSegCount - 1)
+            {
+                param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+                return;
+            }
+
+            double toEndLength = new Line(param.OriginPost.Point, param.OriginPost.BaseLine.EndPt).Length;
+
+            if (toEndLength<Corridor.MinLengthForDoor)
+            {
+                param.OriginPost = new DividingOrigin(coreSeg[originIndex + 1].StartPt, coreSeg[originIndex + 1]);
+                return;
+            }
+
+            param.OriginPost.Point = new Point3d(param.OriginPost.Point + param.OriginPost.BaseLine.UnitTangent * Corridor.MinLengthForDoor);
+            return;
         }
 
-        private static DivMakerOutput DrawOrtho(DividerParams param)
+        private static void SetPostParallelToOrigin(DividerParams param)
+        {
+            List<RoomLine> coreSeg = param.OutlineLabel.Core;
+            int originIndex = coreSeg.FindIndex(i => i.Liner == param.OriginPost.Liner);
+            int coreSegCount = coreSeg.Count();
+
+            if (originIndex == coreSegCount - 1)
+                return;
+
+            for(int i = originIndex+1; i<coreSegCount; i++)
+            {
+                if(coreSeg[i].UnitTangent == param.OriginPost.BaseLine.UnitTangent)
+                { 
+                    param.OriginPost = new DividingOrigin(coreSeg[i].StartPt, coreSeg[i]);
+                    return;
+                }
+            } 
+        }
+
+        /*얘.. 위험해요 ^^*/
+        public static DivMakerOutput DrawOrtho(DividerParams param)
         {
             Line orthoLine = PCXTools.ExtendFromPt(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
             List<RoomLine> orthoList = new List<RoomLine>{ new RoomLine(orthoLine, LineType.Inner)};
@@ -102,7 +159,7 @@ namespace patternTest
             DividingLine dividerCurrent = new DividingLine(orthoList, param.OriginPost);
 
             DividerParams paramNext = new DividerParams(param.DividerPre, dividerCurrent, dividerCurrent.Origin, param.OutlineLabel); 
-            Polyline outline = DividerDrawer.GetPartitionOutline(param.DividerPre, dividerCurrent, param.OutlineLabel);
+            Polyline outline = DividerDrawer.GetPartitionOutline(paramNext);
 
             return new DivMakerOutput(outline, paramNext);
         }
@@ -121,7 +178,7 @@ namespace patternTest
 
             int loopLimiter = 0;
 
-            while (lowerBound<=upperBound)
+            while (lowerBound<upperBound)
             {
                 if (loopLimiter > iterNum)
                     break;
@@ -158,17 +215,17 @@ namespace patternTest
             List<RoomLine> coreSeg = param.OutlineLabel.Core;
             int indexCurrent = coreSeg.FindIndex(i => i.Liner == param.OriginPost.Liner);
 
-            if (indexCurrent == coreSeg.Count - 1) // 조기 종료되는 경우..
-                return DrawAtLastBase(param);
+            if (indexCurrent <= coreSeg.Count - 2) // 사실상 마지막 세그먼트인 경우..
+            {
+                param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+                return DrawOrtho(param);
+            }
 
             DividerSetter.CornerState cornerStat = 
                 DividerSetter.GetCCWCornerState(coreSeg[indexCurrent].UnitTangent, coreSeg[indexCurrent + 1].UnitTangent);
 
             if (cornerStat == DividerSetter.CornerState.Concave)
             {
-                if (indexCurrent == coreSeg.Count - 2) // 조기 종료되는 경우..
-                    return DrawAtLastBase(param);
-
                 DividingOrigin newOrigin = new DividingOrigin(coreSeg[indexCurrent + 2].StartPt, coreSeg[indexCurrent + 2]);
                 param.OriginPost = newOrigin;
                 return DrawOrtho(param);
@@ -185,7 +242,7 @@ namespace patternTest
             int indexCurrent = param.OutlineLabel.Core.FindIndex
                 (i => i.Liner == param.OriginPost.Liner);
 
-            if (indexCurrent == 0) //이 경우는 거의 없을듯..
+            if (indexCurrent <2) //이 경우는 거의 없을듯..
                 return DrawOrtho(param);
 
             DividerSetter.CornerState cornerStat =
@@ -193,9 +250,6 @@ namespace patternTest
 
             if (cornerStat == DividerSetter.CornerState.Concave)
             {
-                if (indexCurrent == 2) //이 경우는 거의 없을듯..
-                    return DrawOrtho(param);
-
                 DividingOrigin newOrigin = new DividingOrigin(coreSeg[indexCurrent - 2].EndPt, coreSeg[indexCurrent - 2]);
                 param.OriginPost = newOrigin;
                 return DrawOrtho(param);
@@ -234,8 +288,23 @@ namespace patternTest
             return;
         }
 
-        private static DivMakerOutput SelectBetterDivider(List<DivMakerOutput> outputCandidate)
-        { }
+        private static DivMakerOutput SelectBetterDivider(List<DivMakerOutput> candidate, double targetArea)
+        {
+            //체 몇개 더 추가..
+            candidate.Sort((x, y) => 
+            (x.DivParams.DividerPost.GetLength().CompareTo(y.DivParams.DividerPost.GetLength())));
+
+            double length1 = candidate[0].DivParams.DividerPost.GetLength();
+            double length2 = candidate[1].DivParams.DividerPost.GetLength();
+
+            if(length1/length2 > 0.85)
+            {
+                candidate.Sort((x, y) => 
+                (Math.Abs(targetArea - PolylineTools.GetArea(x.Poly))).CompareTo(Math.Abs(targetArea - PolylineTools.GetArea(y.Poly))));
+            }
+
+            return candidate[0];
+        }
 
 
         //decider method
@@ -285,6 +354,18 @@ namespace patternTest
             return false;
         }
 
+        private static Boolean IsLastSegment(DividerParams param)
+        {
+            int originIndex = param.OutlineLabel.Core.FindIndex
+                (i => i.Liner == param.OriginPost.BaseLine.Liner);
+
+            int lastIndex = param.OutlineLabel.Core.Count-1;
+            if (originIndex == lastIndex)
+                return true;
+
+            return false;
+        }
+
         /*최소 복도 길이와 본 메서드 톨러런스 둘 다 벗어나는 경우가 있는지..*/
         private static Boolean IsCloseToEnd(DividerParams paramOutput)
         {
@@ -322,27 +403,29 @@ namespace patternTest
             return false;
         }
 
-        //inner dateClass
-        public class DivMakerOutput
+        
+    }
+
+    //inner dateClass
+    public class DivMakerOutput
+    {
+        public DivMakerOutput(Polyline polyline, DividerParams paramNext)
         {
-            public DivMakerOutput(Polyline polyline, DividerParams paramNext)
-            {
-                this.Poly = polyline;
-                this.DivParams = paramNext;
-            }
-
-            public DivMakerOutput()
-            { }
-
-            public DivMakerOutput(DivMakerOutput otherOutput)
-            {
-                this.Poly = otherOutput.Poly;
-                this.DivParams = new DividerParams(otherOutput.DivParams);
-            }
-
-            //property
-            public Polyline Poly { get; set; }
-            public DividerParams DivParams { get; set; }
+            this.Poly = polyline;
+            this.DivParams = paramNext;
         }
+
+        public DivMakerOutput()
+        { }
+
+        public DivMakerOutput(DivMakerOutput otherOutput)
+        {
+            this.Poly = otherOutput.Poly;
+            this.DivParams = new DividerParams(otherOutput.DivParams);
+        }
+
+        //property
+        public Polyline Poly { get; set; }
+        public DividerParams DivParams { get; set; }
     }
 }

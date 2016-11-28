@@ -139,6 +139,16 @@ namespace patternTest
         public DividingLine()
         { }
 
+        //method
+        public double GetLength()
+        {
+            double totalLength = 0;
+            foreach (RoomLine i in Lines)
+                totalLength += i.Length;
+
+            return totalLength;
+        }
+
         //property
         public List<RoomLine> Lines { get; set; }
         public Vector3d FirstDirec { get { return Lines[0].Liner.UnitTangent; } private set { } }

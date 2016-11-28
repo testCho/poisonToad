@@ -13,8 +13,8 @@ namespace patternTest
         {
             Vector3d rotatedVector = new Vector3d(baseVector.X * Math.Cos(angle) - baseVector.Y * Math.Sin(angle), baseVector.X * Math.Sin(angle) + baseVector.Y * Math.Cos(angle), 0);
             return rotatedVector;
-        } 
-        
+        }
+
         public static Vector3d ChangeCoordinate(Vector3d baseVector, Plane fromPln, Plane toPln)
         {
             Vector3d changedVector = baseVector;
@@ -22,7 +22,7 @@ namespace patternTest
 
             return changedVector;
         }
-        
+
         /// <summary>
         /// 주어진 폴리라인 위의 한 세그먼트에 대해 폴리라인 내부로 향하는 단위벡터를 구해줍니다.
         /// </summary>
@@ -65,7 +65,7 @@ namespace patternTest
             Vector3d alignP2P = new Line(pointStart, pointEnd).UnitTangent;
             Vector3d perpP2P = VectorTools.RotateVectorXY(alignP2P, Math.PI / 2);
 
-            Point3d corner1 = pointStart - alignP2P * alignThickness/2 + perpP2P * perpThickness / 2;
+            Point3d corner1 = pointStart - alignP2P * alignThickness / 2 + perpP2P * perpThickness / 2;
             Point3d corner2 = pointEnd + alignP2P * alignThickness / 2 - perpP2P * perpThickness / 2;
             Plane p2pPlane = new Plane(pointStart, alignP2P, perpP2P);
 
@@ -295,7 +295,7 @@ namespace patternTest
             Curve polyCrv1 = poly1.ToNurbsCurve();
             Curve polyCrv2 = poly2.ToNurbsCurve();
 
-            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(polyCrv1, polyCrv2,0,0);
+            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(polyCrv1, polyCrv2, 0, 0);
             foreach (var i in polyIntersection)
             {
                 if (i.IsOverlap)
@@ -304,7 +304,7 @@ namespace patternTest
 
             return false;
         }
-  
+
     }
 
     class PointTools
@@ -395,7 +395,7 @@ namespace patternTest
 
             double oldSum = SumDouble(oldPortions);
             foreach (double i in oldPortions)
-                newPortions.Add(newSum*(i/oldSum));
+                newPortions.Add(newSum * (i / oldSum));
 
             return newPortions;
         }
@@ -991,6 +991,37 @@ namespace patternTest
                 }
             }
             return IntersectCrvs;
+        }
+
+        public static Point3d GetCrossPt(Line line1, Line line2)
+        {
+            //dSide: divider 쪽, oSide: origin 쪽
+            Point3d origin1 = line1.PointAt(0);
+            Vector3d direction1 = line1.UnitTangent;
+
+            Point3d origin2 = line2.PointAt(0);
+            Vector3d direction2 = line2.UnitTangent;
+
+            //ABC is coefficient of linear Equation, Ax+By=C 
+            double A1 = direction1.Y;
+            double B1 = -direction1.X;
+            double C1 = A1 * origin1.X + B1 * origin1.Y;
+
+            double A2 = direction2.Y;
+            double B2 = -direction2.X;
+            double C2 = A2 * origin2.X + B2 * origin2.Y;
+
+            //det=0: isParallel, 평행한 경우
+            double detTolerance = 0.005;
+            double det = A1 * B2 - B1 * A2;
+
+            if (Math.Abs(det) < detTolerance)
+                return Point3d.Unset;
+
+            double perpX = (B2 * C1 - B1 * C2) / det;
+            double perpY = (A1 * C2 - A2 * C1) / det;
+
+            return new Point3d(perpX, perpY, 0);
         }
     }
 }

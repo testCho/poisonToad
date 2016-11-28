@@ -9,8 +9,12 @@ namespace patternTest
 {
     class DividerDrawer
     {
-        public static Polyline GetPartitionOutline(DividingLine dividerPre, DividingLine dividerCurrent, LabeledOutline outlineLabeled)
+        public static Polyline GetPartitionOutline(DividerParams param)
         {
+            DividingLine dividerPre = param.DividerPre;
+            DividingLine dividerCurrent = param.DividerPost;
+            LabeledOutline outlineLabeled = param.OutlineLabel;
+
             List<Point3d> partitionVertex = new List<Point3d>();
 
             //코어쪽 꼭지점 추가, divider끼리 겹치는 경우는 아마 없을 것..
@@ -71,7 +75,7 @@ namespace patternTest
                 if (paramCurrentEndOnOut != paramCurrentCeiling)
                     partitionVertex.Add(outlineLabeled.Pure.PointAt(paramCurrentEndOnOut));
 
-                double paramLast = outlineLabeled.Pure.Count;
+                double paramLast = outlineLabeled.Pure.Count-1;
 
                 for (double i = paramCurrentCeiling; i < paramLast; i++)
                     partitionVertex.Add(outlineLabeled.Pure.PointAt(i));
@@ -79,14 +83,12 @@ namespace patternTest
                 Point3d vertexLast = outlineLabeled.Pure.PointAt(paramLast);
                 Point3d vertexInit = outlineLabeled.Pure.PointAt(0);
 
-                if (vertexLast != vertexInit)
-                    partitionVertex.Add(vertexLast);
-
                 for (double i = 0; i < paramPreFloor + 1; i++)
                     partitionVertex.Add(outlineLabeled.Pure.PointAt(i));
 
                 if (paramPreEndOnOut != paramPreFloor)
                     partitionVertex.Add(outlineLabeled.Pure.PointAt(paramPreEndOnOut));
+
             }
 
             else
@@ -109,7 +111,6 @@ namespace patternTest
                     if (paramPreEndOnOut != paramPreFloor)
                         partitionVertex.Add(outlineLabeled.Pure.PointAt(paramPreEndOnOut));
                 }
-
             }
 
 
