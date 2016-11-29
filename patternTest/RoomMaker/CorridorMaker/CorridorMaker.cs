@@ -9,7 +9,22 @@ namespace patternTest
 {
     class CorridorMaker
     {
-        public static Line SearchBaseLine(Core core)
+        //main method
+        public static List<Polyline> MakeCorridor(Polyline outline, Core core)
+        {
+            Line baseLine = SearchBaseLine(core);
+            List<Line> subAxis = new List<Line>();
+            List<Line> baseAxis = SetBaseAxis(outline, core, baseLine, out subAxis);
+
+            List<corridorType> availableTypes = DetectCorridorType(outline, core, baseAxis, subAxis);
+            List<Polyline> corridor = new List<Polyline>();
+
+            return corridor;
+        }
+
+
+        //method
+        private static Line SearchBaseLine(Core core)
         {
             //output
             Line baseSeg = new Line();
@@ -48,6 +63,39 @@ namespace patternTest
             return baseSeg;
         }
 
+        private static List<corridorType> DetectCorridorType(Polyline outline, Core core, List<Line> baseAxis, List<Line> subAxis)
+        {
+            //outline 과 landing 사이 거리,방향으로 가능한 복도타입 판정
+            List<corridorType> available = new List<corridorType>();
+
+            Point3d basePt = baseAxis[0].PointAt(0);
+
+            double toOutlineDistH = subAxis[0].Length;
+            double toCoreDistH = PCXTools.ExtendFromPt(basePt, core.CoreLine, subAxis[0].UnitTangent).Length;
+            double toOutlineDistV = baseAxis[1].Length;
+            double toCoreDistV = PCXTools.ExtendFromPt(basePt, core.CoreLine, baseAxis[1].UnitTangent).Length;
+
+            bool IsHorizontalOff = toOutlineDistH > toCoreDistH;
+            bool IsVerticalOff = toOutlineDistV > toCoreDistV;
+
+            if (IsHorizontalOff)
+                available.Add(corridorType.DH2);
+            else if (IsVerticalOff)
+            {
+                available.Add(corridorType.SV);
+                available.Add(corridorType.DH1);
+            }
+            else
+            {
+                available.Add(corridorType.SH);
+                available.Add(corridorType.SV);
+                available.Add(corridorType.DH1);
+                available.Add(corridorType.DV);
+
+            }
+            return available;
+        }              
+        
         private static double SetBasePtVLimit(Core core, Line baseLine)
         {
             double vLimit = 0;
@@ -66,7 +114,7 @@ namespace patternTest
             return vLimit;
         }
 
-        public static List<Line> SetBaseAxis(Polyline outline, Core core, Line baseLine, out List<Line> counterAxis)
+        private static List<Line> SetBaseAxis(Polyline outline, Core core, Line baseLine, out List<Line> counterAxis)
         {
             //output
             List<Line> baseAxis = new List<Line>();
@@ -110,5 +158,7 @@ namespace patternTest
             return baseAxis;
 
         }
+
+
     }
 }

@@ -86,7 +86,6 @@ namespace patternTest
             return pureOutline;
         }
 
-        //코어 세그먼트가 너무 길어서 코어와 랜딩에 동시에 닿는 경우 처리 필요..
         private static List<RoomLine> LabelUnionSeg(Polyline trimmedUnion, Core core, List<Polyline> corridor)
         {
             List<RoomLine> labeledRoomBase = new List<RoomLine>();

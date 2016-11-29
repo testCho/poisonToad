@@ -44,6 +44,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RoomMaker\CorridorMaker\Pattern3S.cs" />
     <Compile Include="RoomMaker\PartitionMaker\CornerMaker.cs" />
     <Compile Include="RoomMaker\PartitionMaker\DividerDrawer.cs" />
     <Compile Include="RoomMaker\PartitionMaker\DividerMaker.cs" />
