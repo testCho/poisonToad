@@ -19,19 +19,25 @@ namespace patternTest
             if (IsOverlap(tempParam))
                 MoveOriginProperly(tempParam);
 
-            //마지막 세그먼트 판정을 여기서 해줘도 될듯
-            if (IsConcave(param))
-                return DrawAtConcaveCorner(param, targetArea);
+            if (IsOriginEndConcave(tempParam))
+                return DrawAtConcaveCorner(tempParam, targetArea);
 
-            return DrawAtThisBaseEnd(param, targetArea);
+            return DrawAtThisBaseEnd(tempParam, targetArea);
         }
 
 
         //sub method
         private static DivMakerOutput DrawAtConcaveCorner(DividerParams param, double targetArea)
         {
-            param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
-            DivMakerOutput thisEndOutput = DrawOrtho(param);
+            if (param.OriginPost.Point == param.OriginPost.BaseLine.EndPt)
+            {
+                SetPostStartToOrigin(param);
+                return DrawEachPartition(param, targetArea);
+            }
+
+            DividerParams thisEndParam = new DividerParams(param);
+            thisEndParam.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+            DivMakerOutput thisEndOutput = DrawOrtho(thisEndParam);
 
             if (HasEnoughArea(thisEndOutput, targetArea))
             {
@@ -45,17 +51,25 @@ namespace patternTest
                 return SelectBetterDivider(outputCandidate, targetArea);
             }
 
-            SetPostParallelToOrigin(param);
+            //SetPostParallelToOrigin(param);
+            SetPostStartToOrigin(param);
             return DrawEachPartition(param, targetArea);
         }
 
         private static DivMakerOutput DrawAtThisBaseEnd(DividerParams param, double targetArea)
         {
-            param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
-            DivMakerOutput thisEndOutput = DrawOrtho(param);
+            DividerParams thisEndParam = new DividerParams(param);
+            thisEndParam.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+            DivMakerOutput thisEndOutput = DrawOrtho(thisEndParam);
 
             if (HasEnoughArea(thisEndOutput, targetArea))
+            {
+                if (thisEndParam.OriginPost.Point == param.OriginPost.Point)
+                    return thisEndOutput;
+
                 return DrawAtStraight(param, targetArea);
+            }
+            
 
             if (IsLastSegment(param))
                 return thisEndOutput;
@@ -65,6 +79,7 @@ namespace patternTest
 
         private static DivMakerOutput DrawAtStraight(DividerParams param, double targetArea)
         { 
+
             DivMakerOutput binaryOutput = DrawByBinarySearch(param, targetArea);
 
             if (IsCloseToEnd(binaryOutput.DivParams))
@@ -91,7 +106,7 @@ namespace patternTest
             DividerParams tempParam1 = new DividerParams(param);
             DivMakerOutput cornerOutput = CornerMaker.GetCorner(tempParam1, targetArea);
 
-            if (IsConcave(param))
+            if (IsOriginEndConcave(param))
             {
                 List<DivMakerOutput> outputCandidate = new List<DivMakerOutput>();
                 DividerParams tempParam2 = new DividerParams(param);
@@ -150,10 +165,10 @@ namespace patternTest
             } 
         }
 
-        /*얘.. 위험해요 ^^*/
         public static DivMakerOutput DrawOrtho(DividerParams param)
         {
-            Line orthoLine = PCXTools.ExtendFromPt(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
+            //Line orthoLine = PCXTools.ExtendFromPt(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
+            Line orthoLine = PCXTools.PCXByEquation(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
             List<RoomLine> orthoList = new List<RoomLine>{ new RoomLine(orthoLine, LineType.Inner)};
 
             DividingLine dividerCurrent = new DividingLine(orthoList, param.OriginPost);
@@ -166,15 +181,22 @@ namespace patternTest
 
         private static DivMakerOutput DrawByBinarySearch(DividerParams param, double targetArea)
         {
+            double skipTolerance = 0.005;
             int iterNum = 10;
 
             Point3d ptEnd = param.OriginPost.BaseLine.PointAt(1);
             Point3d ptStart = param.OriginPost.Point;
 
+
             Vector3d searchVector = new Vector3d(ptEnd - ptStart);
+            
+
             double searchRange = searchVector.Length;
             double upperBound = searchRange;
             double lowerBound = 0;
+
+            if (searchRange < skipTolerance)
+                return DrawOrtho(param);
 
             int loopLimiter = 0;
 
@@ -203,8 +225,8 @@ namespace patternTest
                 loopLimiter++;
             }
 
-            Point3d newgOriginPt = ptStart + searchVector / searchRange * lowerBound;
-            param.OriginPost.Point = newgOriginPt;
+            Point3d newOriginPt = ptStart + searchVector / searchRange * lowerBound;
+            param.OriginPost.Point = newOriginPt;
 
             return DrawOrtho(param);
         }
@@ -215,7 +237,7 @@ namespace patternTest
             List<RoomLine> coreSeg = param.OutlineLabel.Core;
             int indexCurrent = coreSeg.FindIndex(i => i.Liner == param.OriginPost.Liner);
 
-            if (indexCurrent <= coreSeg.Count - 2) // 사실상 마지막 세그먼트인 경우..
+            if (indexCurrent >= coreSeg.Count - 2) // 사실상 마지막 세그먼트인 경우..
             {
                 param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
                 return DrawOrtho(param);
@@ -310,12 +332,19 @@ namespace patternTest
         //decider method
         private static Boolean IsOverlap(DividerParams param)
         {
-            double dotTolerance = 0.005;
-            Vector3d originToDividerEnd = new Vector3d(param.DividerPre.Lines.Last().PointAt(1) - param.OriginPost.Point);
-            double overlapDecider = Vector3d.Multiply(originToDividerEnd, param.OriginPost.BaseLine.UnitNormal);
+            double crossTolerance = 0.005;
 
-            if (Math.Abs(overlapDecider) < dotTolerance)
-                return true;
+            Vector3d originToDividerEnd = new Vector3d(param.DividerPre.Lines.Last().PointAt(1) - param.OriginPost.Point);
+            originToDividerEnd.Unitize();
+            Vector3d crossDecider = Vector3d.CrossProduct(originToDividerEnd, param.OriginPost.BaseLine.UnitNormal);
+
+            if (Math.Abs(crossDecider.Length) < crossTolerance)
+            {
+                double dotDecider = Vector3d.Multiply(originToDividerEnd, param.OriginPost.BaseLine.UnitNormal);
+                if (dotDecider > 0)
+                    return true;
+            }
+                
 
             return false;
         }
@@ -354,6 +383,31 @@ namespace patternTest
             return false;
         }
 
+        private static Boolean IsOriginEndConcave(DividerParams param)
+        {
+            int originCurrentIndex = param.OutlineLabel.Core.FindIndex
+                 (i => (i.Liner == param.OriginPost.Liner));
+
+            RoomLine cornerLinePre = new RoomLine();
+            RoomLine cornerLinePost = new RoomLine();
+
+
+            if (originCurrentIndex == param.OutlineLabel.Core.Count - 1)
+                return false;
+
+            cornerLinePre = param.OutlineLabel.Core[originCurrentIndex];
+            cornerLinePost = param.OutlineLabel.Core[originCurrentIndex + 1];
+            
+
+
+            DividerSetter.CornerState cornerStat = DividerSetter.GetCCWCornerState(cornerLinePre.UnitTangent, cornerLinePost.UnitTangent);
+
+            if (cornerStat == DividerSetter.CornerState.Concave)
+                return true;
+
+            return false;
+        }
+
         private static Boolean IsLastSegment(DividerParams param)
         {
             int originIndex = param.OutlineLabel.Core.FindIndex
@@ -369,8 +423,8 @@ namespace patternTest
         /*최소 복도 길이와 본 메서드 톨러런스 둘 다 벗어나는 경우가 있는지..*/
         private static Boolean IsCloseToEnd(DividerParams paramOutput)
         {
-            Point3d currentDivOrigin = paramOutput.DividerPre.Origin.Point;
-            Point3d baseLineEnd = paramOutput.DividerPre.BaseLine.EndPt;
+            Point3d currentDivOrigin = paramOutput.DividerPost.Origin.Point;
+            Point3d baseLineEnd = paramOutput.DividerPost.BaseLine.EndPt;
 
             double betweenEnd = new Vector3d(baseLineEnd - currentDivOrigin).Length;
 
@@ -382,8 +436,8 @@ namespace patternTest
 
         private static Boolean IsCloseToStart(DividerParams paramOutput)
         {
-            Point3d currentDivOrigin = paramOutput.DividerPre.Origin.Point;
-            Point3d baseLineStart = paramOutput.DividerPre.BaseLine.StartPt;
+            Point3d currentDivOrigin = paramOutput.DividerPost.Origin.Point;
+            Point3d baseLineStart = paramOutput.DividerPost.BaseLine.StartPt;
 
             double betweenStart = new Vector3d(currentDivOrigin - baseLineStart).Length;
 
@@ -407,25 +461,5 @@ namespace patternTest
     }
 
     //inner dateClass
-    public class DivMakerOutput
-    {
-        public DivMakerOutput(Polyline polyline, DividerParams paramNext)
-        {
-            this.Poly = polyline;
-            this.DivParams = paramNext;
-        }
-
-        public DivMakerOutput()
-        { }
-
-        public DivMakerOutput(DivMakerOutput otherOutput)
-        {
-            this.Poly = otherOutput.Poly;
-            this.DivParams = new DividerParams(otherOutput.DivParams);
-        }
-
-        //property
-        public Polyline Poly { get; set; }
-        public DividerParams DivParams { get; set; }
-    }
+   
 }

@@ -55,12 +55,14 @@ namespace patternTest
             Polyline pureCore = new Polyline();
             List<Curve> memberToJoin = new List<Curve>();
 
+
             Curve outlineCrv = outline.ToNurbsCurve();
+            PolylineTools.SetAlignPolylineCW(coreUnion);
             List<Curve> coreSeg = coreUnion.ToNurbsCurve().DuplicateSegments().ToList();
 
             foreach (Curve i in coreSeg)
             {
-                if (!i.IsOverlap(outlineCrv))
+                if (!CurveTools.IsOverlap(i, outlineCrv))
                     memberToJoin.Add(i);
             }
 
@@ -78,7 +80,7 @@ namespace patternTest
 
             foreach (Curve i in outlineSeg)
             {
-                if (!i.IsOverlap(coreCrv))
+                if (!CurveTools.IsOverlap(i, coreCrv))
                     memberToJoin.Add(i);
             }
 
@@ -90,7 +92,7 @@ namespace patternTest
         {
             List<RoomLine> labeledRoomBase = new List<RoomLine>();
 
-            trimmedUnion.AlignCC();
+            //PolylineTools.SetAlignPolyline(trimmedUnion);
             List<Line> unlabeledSeg = trimmedUnion.GetSegments().ToList();
 
             Curve coreCrv = core.CoreLine.ToNurbsCurve();
@@ -104,9 +106,9 @@ namespace patternTest
             {
                 Curve iCrv = i.ToNurbsCurve();
 
-                if (iCrv.IsOverlap(corridorCrv))
+                if (CurveTools.IsOverlap(iCrv,corridorCrv))
                     labeledRoomBase.Add(new RoomLine(i, LineType.Corridor));
-                else if (iCrv.IsOverlap(coreCrv))
+                else if (CurveTools.IsOverlap(iCrv, coreCrv))
                     labeledRoomBase.Add(new RoomLine(i, LineType.Core));
             }
 

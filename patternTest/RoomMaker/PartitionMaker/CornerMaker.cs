@@ -31,50 +31,52 @@ namespace patternTest
             //vertexSetting
             //dividerDrawer랑 같은 코드...
             List<Point3d> partitionVertex = new List<Point3d>();
+            partitionVertex.Add(outline.PointAt(outlineParamPost));
 
-            if (outlineParamPre < outlineParamPost)
+            if (outlineParamPre < outlineParamPost) //인덱스 꼬였을 때
             {
                 if (outlineParamPost != paramPostCeiling)
-                    partitionVertex.Add(outline.PointAt(outlineParamPost));
+                    partitionVertex.Add(outline.PointAt(paramPostCeiling));
 
                 double paramLast = outline.Count - 1;
 
-                for (double i = paramPostCeiling; i < paramLast; i++)
+                for (double i = paramPostCeiling + 1; i < paramLast; i++)
                     partitionVertex.Add(outline.PointAt(i));
 
-                Point3d vertexLast = outline.PointAt(paramLast);
-                Point3d vertexInit = outline.PointAt(0);
-
-                for (double i = 0; i < paramPreFloor + 1; i++)
+                for (double i = 0; i < paramPreFloor; i++)
                     partitionVertex.Add(outline.PointAt(i));
 
                 if (outlineParamPre != paramPreFloor)
-                    partitionVertex.Add(outline.PointAt(outlineParamPre));
+                    partitionVertex.Add(outline.PointAt(paramPreFloor));
 
             }
 
             else
             {
+
+
                 double betweenIndexCounter = paramPreFloor - paramPostCeiling;
-                if (betweenIndexCounter < 0)
+
+                if (betweenIndexCounter == 0)
                 {
-                    partitionVertex.Add(outline.PointAt(outlineParamPost));
-                    partitionVertex.Add(outline.PointAt(outlineParamPre));
+                    if ((outlineParamPost != paramPostCeiling) && (outlineParamPre != paramPreFloor))
+                        partitionVertex.Add(outline.PointAt(paramPostCeiling));
                 }
 
-                else
+                else if (betweenIndexCounter > 0)
                 {
                     if (outlineParamPost != paramPostCeiling)
-                        partitionVertex.Add(outline.PointAt(outlineParamPost));
+                        partitionVertex.Add(outline.PointAt(paramPostCeiling));
 
-                    for (double i = paramPostCeiling; i < paramPreFloor + 1; i++)
+                    for (double i = paramPostCeiling + 1; i < paramPreFloor; i++)
                         partitionVertex.Add(outline.PointAt(i));
 
                     if (outlineParamPre != paramPreFloor)
-                        partitionVertex.Add(outline.PointAt(outlineParamPre));
+                        partitionVertex.Add(outline.PointAt(paramPreFloor));
                 }
             }
 
+            partitionVertex.Add(outline.PointAt(outlineParamPre));
 
             //decider
             //확장성 있게 만들 수 있나?
@@ -100,13 +102,19 @@ namespace patternTest
             Vector3d mainPerp = VectorTools.RotateVectorXY(mainAlign, Math.PI / 2);
             Point3d origin = param.OriginPost.Point;
 
-            if (mainAlign != param.OriginPost.BaseLine.UnitNormal)
+            double dotProduct = Vector3d.Multiply(mainAlign, param.OriginPost.BaseLine.UnitNormal);
+            double dotTolerance = 0.005;
+
+            bool isMainDirecPreDiv = false; 
+
+            if (Math.Abs(dotProduct) < dotTolerance)
             {
                 int originIndex = param.OutlineLabel.Core.FindIndex
                     (i => i.Liner == param.OriginPost.BaseLine.Liner);
 
                 param.OriginPost = new DividingOrigin(origin, param.OutlineLabel.Core[originIndex-1]);
                 mainPerp = VectorTools.RotateVectorXY(mainAlign, -Math.PI / 2);
+                isMainDirecPreDiv = true;
             }
 
             
@@ -120,7 +128,11 @@ namespace patternTest
                     break;
 
                 double tempStatus = (upperBound - lowerBound) / 2 + lowerBound;
+
                 Point3d tempAnchor = origin + mainAlign * tempStatus;
+                if (isMainDirecPreDiv)
+                    tempAnchor = origin + mainAlign * (mainLine.Length - tempStatus);
+
                 List<RoomLine> cornerDividingLines = new List<RoomLine>();
                 cornerDividingLines.Add(new RoomLine(new Line(origin, tempAnchor), LineType.Inner));
                 Line anchorToOutline = PCXTools.ExtendFromPt(tempAnchor, param.OutlineLabel.Pure, mainPerp);
@@ -265,8 +277,8 @@ namespace patternTest
         private static Line GetMainLine(DividerParams param, List<Point3d> outlineVertex)
         {
             Point3d noFoldOrigin = param.OriginPost.Point;
-            Line cornerLinePre = new Line(noFoldOrigin, outlineVertex[1]);
-            Line cornerLinePost = new Line(noFoldOrigin, outlineVertex[0]);
+            Line cornerLinePre = new Line(noFoldOrigin, outlineVertex.Last());
+            Line cornerLinePost = new Line(noFoldOrigin, outlineVertex.First());
 
             if (cornerLinePre.Length > cornerLinePost.Length)
                 return cornerLinePre;

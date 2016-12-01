@@ -44,27 +44,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RoomMaker\CorridorMaker\Pattern3S.cs" />
+    <Compile Include="Debugger.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\CorridorDecider.cs" />
+    <Compile Include="DataStructure\CorridorDS.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern3S.cs" />
     <Compile Include="RoomMaker\PartitionMaker\CornerMaker.cs" />
     <Compile Include="RoomMaker\PartitionMaker\DividerDrawer.cs" />
     <Compile Include="RoomMaker\PartitionMaker\DividerMaker.cs" />
     <Compile Include="RoomMaker\PartitionMaker\DividerSetter.cs" />
-    <Compile Include="DataStructure\Issue.cs" />
+    <Compile Include="Issue.cs" />
     <Compile Include="RoomMaker\CorridorMaker\CorridorMaker.cs" />
     <Compile Include="DataStructure\RoomDS.cs" />
     <Compile Include="RoomMaker\Labeler.cs" />
     <Compile Include="RoomMaker\PartitionMaker\PartitionMaker.cs" />
     <Compile Include="RoomMaker\RoomMaker.cs" />
     <Compile Include="Tools\Extend.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Pattern1S.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Pattern2S.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Pattern3D.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Pattern4S.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern1S.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern2S.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern3D.cs" />
+    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern4S.cs" />
     <Compile Include="patternTestCommand.cs" />
     <Compile Include="patternTestPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Tools.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

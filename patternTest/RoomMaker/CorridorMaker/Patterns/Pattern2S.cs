@@ -7,8 +7,39 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern2S
+    class Pattern2S: ICorridorPattern
     {
+        public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
+        {
+            List<double> tempFactors = new List<double>();
+            if (lengthFactors.Count == 0)
+                tempFactors = GetInitialLengthFactors();
+            else
+                tempFactors = lengthFactors;
+
+            Point3d anchor1 = DrawAnchor1(baseLine, mainAxis);
+            Point3d anchor2 = DrawAnchor2(anchor1, core, mainAxis);
+            Point3d anchor3 = DrawAnchor3(anchor2, outline, mainAxis, baseLine);
+            Point3d anchor4 = DrawAnchor4(anchor3, outline, mainAxis, tempFactors[0]);
+
+            List<Point3d> anchors = new List<Point3d>();
+            anchors.Add(anchor1);
+            anchors.Add(anchor2);
+            anchors.Add(anchor3);
+            anchors.Add(anchor4);
+
+            return DrawCorridor(anchors, mainAxis);
+        }
+
+        public List<double> GetInitialLengthFactors()
+        {
+            List<double> lengthFactors = new List<double>();
+            lengthFactors.Add(0.5);
+
+            return lengthFactors;
+        }
+
+        //
         private static Point3d DrawAnchor1(Line baseLine, List<Line> baseAxis)
         {
             Point3d anchor = new Point3d();
@@ -26,14 +57,14 @@ namespace patternTest
 
             double coreSideLimit = PCXTools.ExtendFromPt(baseAxis[0].PointAt(0), core.CoreLine, -baseAxis[1].UnitTangent).Length;
             double scaledCorridorWidth = Corridor.OneWayWidth / 2;
-            double vLimit = coreSideLimit + scaledCorridorWidth / 2;
+            double vLimit = coreSideLimit + scaledCorridorWidth;
 
             anchor2 = anchor1 - baseAxis[1].UnitTangent * vLimit;
 
             return anchor2;
         }
 
-        private static Point3d DrawAnchor3(Point3d anchor2, Polyline outline, List<Line>baseAxis, Line baseLine,double hFactor)
+        private static Point3d DrawAnchor3(Point3d anchor2, Polyline outline, List<Line>baseAxis, Line baseLine)
         {
             Point3d anchor3 = new Point3d();
 
@@ -43,7 +74,7 @@ namespace patternTest
             if (outlineSideLimit < hLimit)
                 hLimit = outlineSideLimit;
 
-            anchor3 = anchor2 - baseAxis[0].UnitTangent * hLimit*hFactor;
+            anchor3 = anchor2 - baseAxis[0].UnitTangent * hLimit;
 
             return anchor3;
         }
@@ -58,9 +89,9 @@ namespace patternTest
             return anchor4;
         }
 
-        private static Polyline DrawCorridor(List<Point3d> anchors, List<Line> mainAxis)
+        private static List<Polyline> DrawCorridor(List<Point3d> anchors, List<Line> mainAxis)
         {
-            Polyline corridor = new Polyline();
+            List<Polyline> corridor = new List<Polyline>();
 
             if (anchors.Count < 2)
                 return null;
@@ -85,7 +116,7 @@ namespace patternTest
                     intersected = Curve.CreateBooleanUnion(unionCurves)[0];
                 }
 
-                corridor = CurveTools.ToPolyline(intersected);
+                corridor.Add(CurveTools.ToPolyline(intersected));
             }
 
             return corridor;

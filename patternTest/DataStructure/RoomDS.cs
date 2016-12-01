@@ -7,39 +7,6 @@ using System.IO;
 
 namespace patternTest
 {
-    class Core
-    {
-        //constructor
-        public Core(Polyline coreLine, Polyline landing, Vector3d upstairDirec)
-        {
-            CoreLine = coreLine;
-            Landing = landing;
-            UpstairDirec = upstairDirec;
-        }
-
-        //property
-        public Polyline CoreLine { get; private set; }
-        public Polyline Landing { get; private set; }
-        public Vector3d UpstairDirec{ get; private set; }
-    }
-
-    class Corridor
-    {
-        //field
-        private static double scale = 1;
-        private static double ONE_WAY_CORRIDOR_WIDTH = 1200;
-        private static double TWO_WAY_CORRIDOR_WIDTH = 1800;
-        private static double MINIMUM_ROOM_WIDTH = 3000;
-        private static double MINIMUM_CORRIDOR_LENGTH = 1200; //임시
-
-        //method
-
-        //property
-        public static double MinRoomWidth { get { return MINIMUM_ROOM_WIDTH / scale; } private set { } }
-        public static double OneWayWidth { get { return ONE_WAY_CORRIDOR_WIDTH / scale; } private set { } }
-        public static double TwoWayWidth { get { return TWO_WAY_CORRIDOR_WIDTH / scale; } private set { } }
-        public static double MinLengthForDoor { get { return MINIMUM_CORRIDOR_LENGTH / scale; } private set { } }
-    }
 
     public class LabeledOutline
     {
@@ -104,7 +71,8 @@ namespace patternTest
         }
 
         public DividingOrigin()
-        { }
+        {
+        }
 
         public DividingOrigin(DividingOrigin otherOrigin)
         {
@@ -130,10 +98,15 @@ namespace patternTest
         public DividingLine(DividingLine otherDivider)
         {
             this.Lines = new List<RoomLine>();
-            for (int i = 0; i < otherDivider.Lines.Count; i++)
-                Lines.Add(otherDivider.Lines[i]);
+            this.Origin = new DividingOrigin();
 
-            this.Origin = new DividingOrigin(otherDivider.Origin);
+            if (otherDivider!=null && otherDivider.BaseLine!=null)
+            {
+                for (int i = 0; i < otherDivider.Lines.Count; i++)
+                    this.Lines.Add(otherDivider.Lines[i]);
+
+                this.Origin = new DividingOrigin(otherDivider.Origin);
+            }            
         }
 
         public DividingLine()
@@ -183,7 +156,8 @@ namespace patternTest
         }
 
         public DividerParams()
-        { }
+        {
+        }
 
         //method
         public void PostToPre()
@@ -198,13 +172,31 @@ namespace patternTest
         public LabeledOutline OutlineLabel { get; set; }
     }
 
+    public class DivMakerOutput
+    {
+        public DivMakerOutput(Polyline polyline, DividerParams paramNext)
+        {
+            this.Poly = polyline;
+            this.DivParams = paramNext;
+        }
+
+        public DivMakerOutput()
+        { }
+
+        public DivMakerOutput(DivMakerOutput otherOutput)
+        {
+            this.Poly = otherOutput.Poly;
+            this.DivParams = new DividerParams(otherOutput.DivParams);
+        }
+
+        //property
+        public Polyline Poly { get; set; }
+        public DividerParams DivParams { get; set; }
+    }
 
     //enum
     public enum LineType { Core, Corridor, Outer, Inner } 
     //선타입 - 코어, 복도, 외벽, 내벽
-
-    public enum corridorType { SH, SV, DH1, DH2, DV }
-    //복도타입 - S:single 편복도, D:double 중복도, H:horizontal 횡축, V:vertical 종축, 1:단방향, 2:양방향
 
 
 }

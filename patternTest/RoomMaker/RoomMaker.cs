@@ -10,22 +10,24 @@ namespace patternTest
     class RoomMaker
     {
         //main method
-        public List<Polyline> MakeRoom(List<double> roomAreaSet, Polyline outline, Core core)
+        public static List<Polyline> MakeRoom(List<double> roomAreaSet, Polyline outline, Core core)
         {
             List<Polyline> rooms = new List<Polyline>();
 
-            //CorridorMaker class 안에서 해결할 것.. //
-           
-            //여기까지//
+            List<Polyline> corridor = CorridorMaker.MakeCorridor(outline, core);
+            
+            /*for proto*/
+            if (corridor == null)
+            {
+                rooms.Add(outline);
+                return rooms;
+            }
+            /*for proto*/
 
             LabeledOutline outlineLabel = Labeler.GetOutlineLabel(outline, core, corridor);
             rooms = PartitionMaker.DrawPartitions(outlineLabel, roomAreaSet);
 
             return rooms;
-        }
-
-
-        //method
-       
+        }       
     }
 }

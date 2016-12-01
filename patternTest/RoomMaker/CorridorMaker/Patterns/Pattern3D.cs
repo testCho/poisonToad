@@ -7,8 +7,34 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern3D
+    class Pattern3D: ICorridorPattern
     {
+        public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
+        {
+            List<double> tempFactors = new List<double>();
+            if (lengthFactors.Count == 0)
+                tempFactors = GetInitialLengthFactors();
+            else
+                tempFactors = lengthFactors;
+
+            List<Point3d> anchor1s = DrawAnchor1(baseLine, mainAxis, tempFactors[0]);
+
+            tempFactors.RemoveAt(0);
+            List<Point3d> anchor2s = DrawAnchor2(anchor1s, outline, mainAxis, tempFactors);
+
+            return DrawCorridor(anchor1s, anchor2s);
+        }
+
+        public List<double> GetInitialLengthFactors()
+        {
+            List<double> lengthFactors = new List<double>();
+            lengthFactors.Add(0.5);
+            lengthFactors.AddRange(new List<double>{ 0.5, 0.5});
+
+            return lengthFactors;
+        }
+
+        //
         private static List<Point3d> DrawAnchor1(Line baseLine, List<Line> baseAxis, double vFactor)
         {
             //output

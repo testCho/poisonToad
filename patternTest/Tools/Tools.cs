@@ -113,6 +113,22 @@ namespace patternTest
             return tempVertex;
         }
 
+        public static void SetAlignPolyline(Polyline polyline)
+        {
+            if (polyline.ToNurbsCurve().ClosedCurveOrientation(Vector3d.ZAxis) == CurveOrientation.CounterClockwise)
+                polyline.Reverse();
+
+            return;
+        }
+
+        public static void SetAlignPolylineCW(Polyline polyline)
+        {
+            if (polyline.ToNurbsCurve().ClosedCurveOrientation(Vector3d.ZAxis) != CurveOrientation.CounterClockwise)
+                polyline.Reverse();
+
+            return;
+        }
+
         /// <summary>
         /// 폴리라인의 각 세그먼트들에 대해 평행한 또는 안쪽으로 수직인 벡터 리스트를 구해줍니다.(반시계방향 기준)
         /// </summary>
@@ -343,7 +359,7 @@ namespace patternTest
             Polyline output = new Polyline();
             curve.TryGetPolyline(out output);
             return output;
-        }
+        } 
 
         public static Curve ChangeCoordinate(Curve baseCrv, Plane fromPln, Plane toPln)
         {
@@ -362,6 +378,23 @@ namespace patternTest
                     return true;
             }
 
+            return false;
+        }
+
+        public static bool IsOverlap(Curve curve, List<Curve> otherCurves)
+        {
+            foreach (Curve i in otherCurves)
+            {
+                var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve, i, 0, 0);
+                if (tempIntersection.Count == 0)
+                    continue;
+
+                foreach (var j in tempIntersection)
+                {
+                    if (j.IsOverlap)
+                        return true;
+                }
+            }
             return false;
         }
     }
@@ -843,7 +876,7 @@ namespace patternTest
             double coverAllLength = new BoundingBox(boundary).Diagonal.Length * 2;
             LineCurve lay = new LineCurve(basePt, basePt + direction / direction.Length * coverAllLength);
 
-            var layIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(lay, boundary.ToNurbsCurve(), 0, 0);
+            var layIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(lay, boundary.ToNurbsCurve(),0, 0);
 
             List<Point3d> intersectedPts = new List<Point3d>();
             foreach (var i in layIntersection)
@@ -859,6 +892,55 @@ namespace patternTest
             output = new Line(basePt, intersectedPts[0]);
 
             return output;
+        }
+
+        public static Line PCXByEquation(Point3d basePt, Polyline boundary, Vector3d direction)
+        {
+            double onCurveTolerance = 0.005;
+
+            double coverAllLength = new BoundingBox(boundary).Diagonal.Length * 2;
+            Line testLine = new Line(basePt, basePt + direction/direction.Length*coverAllLength);
+            List<Line> boundarySeg = boundary.GetSegments().ToList();
+            List<Point3d> crossPtCandidate = new List<Point3d>();
+
+            foreach (Line i in boundarySeg)
+            {
+                Point3d tempCrossPt = CCXTools.GetCrossPt(testLine, i);
+                if (IsPtOnLine(tempCrossPt, testLine, onCurveTolerance))
+                    crossPtCandidate.Add(tempCrossPt);
+            }
+
+            crossPtCandidate.Sort((a, b) => (basePt.DistanceTo(a).CompareTo(basePt.DistanceTo(b))));
+            return new Line(basePt, crossPtCandidate[0]);
+        }
+
+        public static Boolean IsPtOnLine(Point3d testPt, Line testLine, double tolerance)
+        {
+            if (testPt == Point3d.Unset)
+                return false;
+
+            List<Point3d> linePtList = new List<Point3d>();
+            linePtList.Add(testLine.PointAt(0));
+            linePtList.Add(testLine.PointAt(1));
+
+
+            linePtList.Sort((a, b) => (a.X.CompareTo(b.X)));
+            double minX = linePtList.First().X;
+            double maxX = linePtList.Last().X;
+
+            linePtList.Sort((a, b) => (a.Y.CompareTo(b.Y)));
+            double minY = linePtList.First().Y;
+            double maxY = linePtList.Last().Y;
+
+            
+            //isOnOriginTest
+            bool isSatisfyingX = (testPt.X - (minX - tolerance)) * ((maxX + tolerance) - testPt.X) >= 0;
+            bool isSatisfyingY = (testPt.Y - (minY - tolerance)) * ((maxY + tolerance) - testPt.Y) >= 0;
+
+            if (isSatisfyingX && isSatisfyingY)
+                return true;
+
+            return false;
         }
     }
 

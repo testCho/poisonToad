@@ -7,8 +7,39 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern4S //많이 고쳐야함 --;
+    class Pattern4S: ICorridorPattern //많이 고쳐야함 --;
     {
+        public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
+        {
+            List<double> tempFactors = new List<double>();
+            if (lengthFactors.Count == 0)
+                tempFactors = GetInitialLengthFactors();
+            else
+                tempFactors = lengthFactors;
+
+            double subLength = new double();
+            Point3d anchor1 = DrawAnchor1(outline, core, baseLine, mainAxis, out subLength);
+            Point3d anchor2 = DrawAnchor2(anchor1, outline, core, baseLine, mainAxis, lengthFactors[0]);
+            Point3d anchor3 = DrawAnchor3(anchor2, outline, mainAxis, tempFactors[1],subLength);
+
+            List<Point3d> anchors = new List<Point3d>();
+            anchors.Add(anchor1);
+            anchors.Add(anchor2);
+            anchors.Add(anchor3);
+
+            return DrawCorridor(anchors, mainAxis, subLength);
+        }
+
+        public List<double> GetInitialLengthFactors()
+        {
+            List<double> lengthFactors = new List<double>();
+            lengthFactors.Add(0.5);
+            lengthFactors.Add(0.5);
+
+            return lengthFactors;
+        }
+
+        //
         private static Point3d DrawAnchor1(Polyline outline, Core core, Line baseLine, List<Line> baseAxis, out double subLength)
         {
             Point3d anchor1 = new Point3d();
@@ -74,9 +105,9 @@ namespace patternTest
             return anchor3;
         }
 
-        private static Polyline DrawCorridor(List<Point3d> anchors, List<Line> baseAxis, double subLength)
+        private static List<Polyline> DrawCorridor(List<Point3d> anchors, List<Line> baseAxis, double subLength)
         {
-            Polyline corridor = new Polyline();
+            List<Polyline> corridor = new List<Polyline>();
 
             Rectangle3d subCorridor = RectangleTools.DrawP2PRect(anchors[0], anchors[1], subLength, Corridor.TwoWayWidth);
             Rectangle3d mainCorridor = RectangleTools.DrawP2PRect(anchors[1], anchors[2], Corridor.TwoWayWidth, subLength);
@@ -85,7 +116,7 @@ namespace patternTest
             forUnion.Add(subCorridor.ToNurbsCurve());
             forUnion.Add(mainCorridor.ToNurbsCurve());
 
-            corridor = CurveTools.ToPolyline(Curve.CreateBooleanUnion(forUnion)[0]);
+            corridor.Add(CurveTools.ToPolyline(Curve.CreateBooleanUnion(forUnion)[0]));
 
             return corridor;
         }

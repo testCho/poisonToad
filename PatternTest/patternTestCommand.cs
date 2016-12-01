@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Rhino;
 using Rhino.Commands;
 using Rhino.Geometry;
@@ -27,12 +28,111 @@ namespace patternTest
         ///<returns>The command name as it appears on the Rhino command line.</returns>
         public override string EnglishName
         {
-            get { return "patternTestCommand"; }
+            get { return "roooom"; }
+        }
+
+        public void Print(List<Polyline> lc, Color color, RhinoDoc doc)
+        {
+
+            foreach (var r in lc)
+            {
+                Guid temp = doc.Objects.Add(r.ToNurbsCurve());
+                var obj = doc.Objects.Find(temp);
+                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
+                obj.Attributes.ObjectColor = color;
+                obj.CommitChanges();
+            }
+        }
+
+        public void Print(Polyline r, Color color, RhinoDoc doc)
+        {
+
+       
+                Guid temp = doc.Objects.Add(r.ToNurbsCurve());
+                var obj = doc.Objects.Find(temp);
+                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
+                obj.Attributes.ObjectColor = color;
+                obj.CommitChanges();
+            
+        }
+
+        public void Print(List<Brep> lc, Color color, RhinoDoc doc)
+        {
+
+            foreach (var r in lc)
+            {
+                Guid temp = doc.Objects.Add(r);
+                var obj = doc.Objects.Find(temp);
+                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
+                obj.Attributes.ObjectColor = color;
+                obj.CommitChanges();
+            }
+        }
+
+        public void Print(Curve[] lc, Color color, RhinoDoc doc)
+        {
+
+            foreach (var r in lc)
+            {
+                Guid temp = doc.Objects.Add(r);
+                var obj = doc.Objects.Find(temp);
+                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
+                obj.Attributes.ObjectColor = color;
+                obj.CommitChanges();
+            }
         }
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
-            
+            RhinoApp.WriteLine("안녕하세요 방만드는기계 입니다.");
+
+            Polyline outline = new Polyline();
+            Polyline coreLine = new Polyline();
+            Polyline landing = new Polyline();
+
+            GetObject getPolyline = new GetObject();
+
+            getPolyline.SetCommandPrompt("외곽선,코어,랜딩 입력해주세요");
+            getPolyline.GeometryFilter = Rhino.DocObjects.ObjectType.Curve;
+            getPolyline.GeometryAttributeFilter = GeometryAttributeFilter.ClosedCurve;
+            getPolyline.SubObjectSelect = false;
+
+            getPolyline.GetMultiple(3, 0);
+
+            if (getPolyline.CommandResult() != Result.Success)
+            {
+                RhinoApp.WriteLine("달라고!");
+                return getPolyline.CommandResult();
+            }
+            else
+            { RhinoApp.WriteLine("입력받았습니다."); }
+
+            if (null == getPolyline.Object(0).Curve())
+            {
+                RhinoApp.WriteLine("없잖아!");
+                return getPolyline.CommandResult();
+            }
+
+            List<Polyline> testPoly = new List<Polyline>();
+            foreach (var i in getPolyline.Objects())
+            {
+                testPoly.Add(CurveTools.ToPolyline(i.Curve()));
+            }
+
+            outline = testPoly[0];
+            coreLine = testPoly[1];
+            landing = testPoly[2];
+
+            List<Polyline> rooms = Debugger.DebugRoom(outline, coreLine, landing);
+            List<Polyline> corridor = Debugger.DebugCorridor(outline, coreLine, landing);
+
+            Print(rooms, Color.Coral, doc);
+            Print(corridor, Color.Aquamarine, doc);
+            doc.Views.Redraw();
+
+            RhinoApp.WriteLine("최선을 다했습니다만...");
+
+            return Result.Success;
         }
     }
 }

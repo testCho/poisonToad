@@ -7,12 +7,41 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern3S
+    class Pattern3S: ICorridorPattern
     {
-        private static List<Point3d> DrawAnchor1(Line baseLine, List<Line> baseAxis, double vFactor)
+        public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
+        {
+            List<double> tempFactors = new List<double>();
+            if (lengthFactors.Count == 0)
+                tempFactors = GetInitialLengthFactors();
+            else
+                tempFactors = lengthFactors;
+
+            Point3d anchor1 = DrawAnchor1(baseLine, mainAxis, tempFactors[0]);
+            Point3d anchor2 = DrawAnchor2(anchor1, outline, mainAxis, tempFactors[1]);
+
+            List<Point3d> anchors = new List<Point3d>();
+            anchors.Add(anchor1);
+            anchors.Add(anchor2);
+
+            return DrawCorridor(anchor1, anchor2);
+        }
+
+        public List<double> GetInitialLengthFactors()
+        {
+            List<double> lengthFactors = new List<double>();
+            lengthFactors.Add(0.5);
+            lengthFactors.Add(0.5);
+
+            return lengthFactors;
+        }
+
+
+        //
+        private static Point3d DrawAnchor1(Line baseLine, List<Line> baseAxis, double vFactor)
         {
             //output
-            List<Point3d> anchors = new List<Point3d>();
+            Point3d anchor1 = new Point3d();
 
             //base setting
             double minRoomWidth = Corridor.MinRoomWidth; //최소 방 너비
@@ -34,18 +63,16 @@ namespace patternTest
             double limitLower = limitCandidates[1];
 
             if (limitLower < minChamberLimit)
-                return null;
+                return Point3d.Unset;
 
             double vLimit = limitUpper - limitLower;
 
-            //draw anchors, 일단 둘 다..
+            //draw anchors
             Vector3d hAxis = baseAxis[0].UnitTangent;
             Vector3d vAxis = baseAxis[1].UnitTangent;
-            Point3d Anchor1first = baseAxis[0].PointAt(0) + hAxis * (baseHalfHSize + corridorwidth / 2) - vAxis * (limitLower + vLimit * vFactor); //횡장축부터, from horizontal-longerAxis
+            anchor1 = baseAxis[0].PointAt(0) + hAxis * (baseHalfHSize + corridorwidth / 2) - vAxis * (limitLower + vLimit * vFactor); //횡장축부터, from horizontal-longerAxis
 
-            anchors.Add(Anchor1first);
-
-            return anchors;
+            return anchor1;
         }
 
         private static Point3d DrawAnchor2(Point3d anchor1, Polyline outline, List<Line> mainAxis, double hFactor)

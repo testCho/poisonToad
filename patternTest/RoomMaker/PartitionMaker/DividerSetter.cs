@@ -29,11 +29,9 @@ namespace patternTest
 
         public static void SetNextDivOrigin(DividerParams setterParam)
         {
-            if (!IsCorridorAvailable(setterParam))
-            {
+            if (!IsCorridorAvailable(setterParam))            
                 FindMinCorridor(setterParam);
-                return;
-            }
+            
 
             if (setterParam.DividerPre.Lines.Count > 1)
             {
@@ -60,17 +58,9 @@ namespace patternTest
             if(nearestCorridor.Length < Corridor.MinLengthForDoor)
             {
                 SetOriginNextStart(setterParam);
-                SetNextDivOrigin(setterParam);
+                FindCorrFromSameBase(setterParam);
                 return;
             }
-
-            Point3d nearestBase = nearestCorridor.PointAt(0);
-            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
-
-            DividingOrigin originNext = new DividingOrigin(baseWithMinCorridor, nearestCorridor);
-
-            SetNextDivOrigin(setterParam);
-            return;
         }
 
         private static void FindCorrFromSameBase(DividerParams setterParam)
@@ -82,7 +72,7 @@ namespace patternTest
             if(originToCorridorEnd<Corridor.MinLengthForDoor)
             {
                 SetOriginNextStart(setterParam);
-                SetNextDivOrigin(setterParam);
+                FindCorrFromSameBase(setterParam);
                 return;
             }
 
@@ -91,7 +81,7 @@ namespace patternTest
 
             DividingOrigin originNext = new DividingOrigin(baseWithMinCorridor, nearestCorridor);
 
-            SetNextDivOrigin(setterParam);
+            setterParam.OriginPost = originNext;
             return;
         }
         /* 여기까지111*/
@@ -137,7 +127,7 @@ namespace patternTest
                 SetOriginFromOtherBase(setterParam);
                 return;
             }
-
+            
             return;
         }
 
@@ -154,7 +144,7 @@ namespace patternTest
 
         private static void SetOriginFromOtherBase(DividerParams setterParam)
         {
-            if(IsCrossed(setterParam.DividerPre, setterParam.OriginPost))
+            if(IsCrossed(setterParam))
             {
                 Point3d perpPt = MakePerpPt(setterParam.DividerPre, setterParam.OriginPost);
 
@@ -179,6 +169,9 @@ namespace patternTest
         {
             int testIndex = setterParam.OutlineLabel.Core.FindIndex
                 (i => (i.Liner == setterParam.OriginPost.Liner));
+
+            if (testIndex == setterParam.OutlineLabel.Core.Count - 1)
+                return;
 
             RoomLine formerCornerLine = setterParam.OutlineLabel.Core[testIndex];
             RoomLine laterCornerLine = setterParam.OutlineLabel.Core[testIndex + 1];
@@ -246,7 +239,7 @@ namespace patternTest
             if(coreSeg[originIndex].Type == LineType.Corridor)
             {
                 double toStartLength =
-                   new Vector3d(setterParam.OriginPost.Point- coreSeg[dividerIndex].StartPt).Length;
+                   new Vector3d(setterParam.OriginPost.Point- coreSeg[originIndex].StartPt).Length;
 
                 if (toStartLength >= Corridor.MinLengthForDoor)
                     return true;
@@ -280,35 +273,50 @@ namespace patternTest
 
         private static Boolean IsCCwPerp(Vector3d tester, Vector3d testee)
         {
-            Vector3d testVector = VectorTools.RotateVectorXY(tester, Math.PI/2);
-            double dotProduct = Math.Abs(Vector3d.Multiply(testVector, testee));
-            if (dotProduct < 0.005)
-                return true;
+            double dotTolerance = 0.005;
+
+            double dotProduct = Math.Abs(Vector3d.Multiply(tester, testee));
+            if (dotProduct < dotTolerance)
+            {
+                Vector3d crossProduct = Vector3d.CrossProduct(tester, testee);
+                double dotWithZ = Vector3d.Multiply(crossProduct, Vector3d.ZAxis);
+                if (dotWithZ > 0)
+                    return true;
+            }
+                
             return false;
         }
 
         private static Boolean IsEndPt(DividingOrigin testOrigin)
         {
-            if (testOrigin.Point == testOrigin.Liner.PointAt(0))
+            double nearTolerance = 0.005;
+            Circle testCircle = new Circle(testOrigin.BaseLine.EndPt, nearTolerance);
+            PointContainment containState = testCircle.ToNurbsCurve().Contains(testOrigin.Point);
+            if (containState == PointContainment.Inside)
                 return true;
+
             return false;
         }
 
-        private static Boolean IsCrossed(DividingLine dividerTest, DividingOrigin originTest)
+        private static Boolean IsCrossed(DividerParams setterParam)
         {
+            DividingLine dividerTest = setterParam.DividerPre;
+            DividingOrigin originTest = setterParam.OriginPost;
+
             Vector3d normal = originTest.BaseLine.UnitNormal;
+            Polyline trimmed = setterParam.OutlineLabel.Trimmed;
+            double coverAllLength = new BoundingBox(new List<Point3d>(trimmed)).Diagonal.Length * 2;
 
             foreach(RoomLine i in dividerTest.Lines)
             {
                 if (i.UnitTangent == normal)
                     continue;
 
-                double testLength = double.PositiveInfinity;
-                LineCurve testCrv = new LineCurve(originTest.Point, originTest.Point + normal * testLength);
-                var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(i.Liner.ToNurbsCurve(), testCrv,0,0);
+                Line testLine = new Line(originTest.Point, originTest.Point + normal * coverAllLength);
+                Point3d crossPt = CCXTools.GetCrossPt(testLine, i.Liner);
 
-                if (tempIntersection.Count > 0)
-                    return true;
+                if (PCXTools.IsPtOnLine(crossPt, i.Liner, 0.005))
+                    return true;                              
             }
 
             return false;     
@@ -346,22 +354,9 @@ namespace patternTest
         }
 
         private static Boolean IsOnOriginBase(Point3d ptTest, DividingOrigin originTest)
-        {
-            if (ptTest == Point3d.Unset)
-                return false;
-
-            Point3d oStart = originTest.Point;
-            Point3d oEnd = originTest.BaseLine.PointAt(1);
-
-            //isOnOriginTest
-            double onTolerance = 0.000;
-            bool isSatisfyingX = (ptTest.X - (oStart.X - onTolerance)) * ((oEnd.X + onTolerance) - ptTest.X) >= 0;
-            bool isSatisfyingY = (ptTest.Y - (oStart.Y - onTolerance)) * ((oEnd.Y + onTolerance) - ptTest.Y) >= 0;
-
-            if (isSatisfyingX && isSatisfyingY)
-                return true;
-
-            return false;
+        {    
+            Line testLine = new Line(originTest.Point, originTest.BaseLine.PointAt(1));
+            return PCXTools.IsPtOnLine(ptTest, testLine, 0);
         }
 
         public static CornerState GetCCWCornerState(Vector3d formerCornerLine, Vector3d laterCornerLine)
