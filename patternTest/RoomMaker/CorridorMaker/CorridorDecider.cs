@@ -29,6 +29,7 @@ namespace patternTest
             {
                 if (IsVerticalOff)
                 {
+                    //return null;
                     if (IsHEnoughOff)
                         return new Pattern3D();
 

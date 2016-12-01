@@ -14,8 +14,8 @@ namespace patternTest
         public static LabeledOutline GetOutlineLabel(Polyline outline, Core core, List<Polyline> corridor)
         {
             // 차집합
-            Polyline coreUnion = new Polyline();
-            Polyline outlineTrimmed = GetOutlineCoreDiff(outline, core, corridor, out coreUnion);
+            Polyline coreUnion = GetCoreUnion(core, corridor);
+            Polyline outlineTrimmed = GetOutlineCoreDiff(outline, coreUnion);
 
             // 순수 외곽선
             Polyline outlinePure = TrimDiffByCore(outlineTrimmed, coreUnion);
@@ -24,15 +24,14 @@ namespace patternTest
             Polyline coreTrimmed = TrimCoreByOutline(outline, coreUnion);
             List<RoomLine> coreSegments = LabelUnionSeg(coreTrimmed, core, corridor);
 
-            return new LabeledOutline(outlineTrimmed, outlinePure, coreSegments);
+            LabeledOutline output = new LabeledOutline(outlineTrimmed, outlinePure, coreSegments, coreUnion);
+            return output;
         }
 
 
         //method
-        private static Polyline GetOutlineCoreDiff(Polyline outline, Core core, List<Polyline> corridor, out Polyline coreUnion)
+        private static Polyline GetCoreUnion(Core core, List<Polyline> corridor)
         {
-            List<Polyline> trimmedOutline = new List<Polyline>();
-
             List<Curve> coreAndCorridor = new List<Curve>();
 
             coreAndCorridor.Add(core.CoreLine.ToNurbsCurve());
@@ -40,13 +39,19 @@ namespace patternTest
                 coreAndCorridor.Add(i.ToNurbsCurve());
 
             Curve union = Curve.CreateBooleanUnion(coreAndCorridor)[0];
-            List<Curve> trimmed = Curve.CreateBooleanDifference(outline.ToNurbsCurve(), union).ToList();
+            return CurveTools.ToPolyline(union);
+        }
+
+        private static Polyline GetOutlineCoreDiff(Polyline outline, Polyline coreUnion)
+        {
+            List<Polyline> trimmedOutline = new List<Polyline>();
+
+            List<Curve> trimmed = Curve.CreateBooleanDifference(outline.ToNurbsCurve(), coreUnion.ToNurbsCurve()).ToList();
 
             foreach (Curve i in trimmed)
                 trimmedOutline.Add(CurveTools.ToPolyline(i));
             trimmedOutline.Sort((x, y) => -PolylineTools.GetArea(x).CompareTo(PolylineTools.GetArea(y)));
 
-            coreUnion = CurveTools.ToPolyline(union);
             return trimmedOutline[0];
         }
 

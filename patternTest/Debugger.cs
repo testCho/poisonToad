@@ -13,7 +13,7 @@ namespace patternTest
         {
             Vector3d upDirec = Test.MakeUpDirec(coreLine, landing);
             Core core = new Core(coreLine, landing, upDirec);
-            List<double> areaSet = new List<double> {30, 30, 30, 30};
+            List<double> areaSet = new List<double> { 30, 30, 30 };
 
             List<Polyline> result = RoomMaker.MakeRoom(areaSet, outline, core);
 

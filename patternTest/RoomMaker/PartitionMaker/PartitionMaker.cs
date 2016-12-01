@@ -17,8 +17,12 @@ namespace patternTest
         {
             List<Polyline> partitionList = new List<Polyline>();
 
-            List<double> scaledAreas = NumberTools.ScaleToNewSum(PolylineTools.GetArea(outlineLabel.Trimmed), roomAreas);
-            double remainedArea = PolylineTools.GetArea(outlineLabel.Trimmed);
+            double floorArea = PolylineTools.GetArea(outlineLabel.Trimmed);
+            if (outlineLabel.Pure.IsClosed)
+                floorArea -= PolylineTools.GetArea(outlineLabel.CoreUnion);
+
+            List<double> scaledAreas = NumberTools.ScaleToNewSum(floorArea, roomAreas);
+            double remainedArea = floorArea;
             double remainTolerance = 0.005;
 
             DividingLine dividerInitial = SetInitialDivider(outlineLabel);
