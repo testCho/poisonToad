@@ -25,7 +25,7 @@ namespace patternTest
             DividerParams paramInitial = new DividerParams(dividerInitial, dividerInitial.Origin, outlineLabel);
 
             //scaledAreas.Count
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < scaledAreas.Count; i++)
             {
                 DivMakerOutput eachPartition = DividerMaker.DrawEachPartition(paramInitial, scaledAreas[i]);
                 partitionList.Add(eachPartition.Poly);

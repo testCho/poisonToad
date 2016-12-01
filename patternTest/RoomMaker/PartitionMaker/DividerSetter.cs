@@ -61,6 +61,14 @@ namespace patternTest
                 FindCorrFromSameBase(setterParam);
                 return;
             }
+
+            Point3d nearestBase = nearestCorridor.StartPt;
+            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
+
+            DividingOrigin originNext = new DividingOrigin(baseWithMinCorridor, nearestCorridor);
+
+            setterParam.OriginPost = originNext;
+            return;
         }
 
         private static void FindCorrFromSameBase(DividerParams setterParam)
@@ -188,8 +196,8 @@ namespace patternTest
                 return;
             }
 
-            setterParam.OriginPost = laterStart;
-            SetNextDivOrigin(setterParam);
+            //setterParam.OriginPost = laterStart;
+            //SetNextDivOrigin(setterParam);
             return;
         }
 

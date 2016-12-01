@@ -76,6 +76,7 @@ namespace patternTest
             List<Curve> memberToJoin = new List<Curve>();
 
             Curve coreCrv = coreUnion.ToNurbsCurve();
+            PolylineTools.SetAlignPolyline(difference);
             List<Curve> outlineSeg = difference.ToNurbsCurve().DuplicateSegments().ToList();
 
             foreach (Curve i in outlineSeg)

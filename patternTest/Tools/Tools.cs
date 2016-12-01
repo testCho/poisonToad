@@ -906,7 +906,7 @@ namespace patternTest
             foreach (Line i in boundarySeg)
             {
                 Point3d tempCrossPt = CCXTools.GetCrossPt(testLine, i);
-                if (IsPtOnLine(tempCrossPt, testLine, onCurveTolerance))
+                if (IsPtOnLine(tempCrossPt, testLine, onCurveTolerance)&&IsPtOnLine(tempCrossPt,i,onCurveTolerance))
                     crossPtCandidate.Add(tempCrossPt);
             }
 

@@ -28,7 +28,13 @@ namespace patternTest
             if (IsHorizontalOff)
             {
                 if (IsVerticalOff)
-                    return null;
+                {
+                    if (IsHEnoughOff)
+                        return new Pattern3D();
+
+                    return new Pattern3S();
+                }
+
 
                 if (IsHEnoughOff)
                     return new Pattern3D();
