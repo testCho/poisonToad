@@ -32,7 +32,7 @@ namespace patternTest
         public List<double> GetInitialLengthFactors()
         {
             List<double> lengthFactors = new List<double>();
-            lengthFactors.Add(0.5);
+            lengthFactors.Add(0.7);
 
             return lengthFactors;
         }

@@ -16,7 +16,7 @@ namespace patternTest
             List<Line> subAxis = new List<Line>();
             List<Line> baseAxis = SetBaseAxis(outline, core, baseLine, out subAxis);
 
-            CorridorDeciderForTest testDecider = new CorridorDeciderForTest();
+            ICorridorDecider testDecider = new CorridorDeciderForTest();
             ICorridorPattern pattern = testDecider.GetCorridorPattern(outline, core, baseAxis, subAxis);
 
             /*for proto*/

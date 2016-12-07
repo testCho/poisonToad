@@ -29,7 +29,7 @@ namespace patternTest
         {
             List<double> lengthFactors = new List<double>();
             lengthFactors.Add(0.5);
-            lengthFactors.AddRange(new List<double>{ 0.5, 0.5});
+            lengthFactors.AddRange(new List<double>{ 0.3, 0.3});
 
             return lengthFactors;
         }

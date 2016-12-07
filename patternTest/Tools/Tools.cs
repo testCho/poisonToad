@@ -932,12 +932,18 @@ namespace patternTest
             double minY = linePtList.First().Y;
             double maxY = linePtList.Last().Y;
 
-            
+            linePtList.Sort((a, b) => (a.Z.CompareTo(b.Z)));
+            double minZ = linePtList.First().Z;
+            double maxZ = linePtList.Last().Z;
+
+
+
             //isOnOriginTest
             bool isSatisfyingX = (testPt.X - (minX - tolerance)) * ((maxX + tolerance) - testPt.X) >= 0;
             bool isSatisfyingY = (testPt.Y - (minY - tolerance)) * ((maxY + tolerance) - testPt.Y) >= 0;
+            bool isSatisfyingZ = (testPt.Z - (minZ - tolerance)) * ((maxZ + tolerance) - testPt.Z) >= 0;
 
-            if (isSatisfyingX && isSatisfyingY)
+            if (isSatisfyingX && isSatisfyingY && isSatisfyingZ)
                 return true;
 
             return false;
@@ -1109,7 +1115,7 @@ namespace patternTest
             double perpX = (B2 * C1 - B1 * C2) / det;
             double perpY = (A1 * C2 - A2 * C1) / det;
 
-            return new Point3d(perpX, perpY, 0);
+            return new Point3d(perpX, perpY, origin1.Z);
         }
     }
 }

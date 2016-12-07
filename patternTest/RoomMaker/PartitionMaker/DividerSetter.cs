@@ -29,8 +29,14 @@ namespace patternTest
 
         public static void SetNextDivOrigin(DividerParams setterParam)
         {
-            if (!IsCorridorAvailable(setterParam))            
-                FindMinCorridor(setterParam);
+            if (!IsCorridorAvailable(setterParam))
+            {
+               int originIndex = setterParam.OutlineLabel.Core.FindIndex
+                    (i => i.Liner == setterParam.OriginPost.BaseLine.Liner);
+
+                if (originIndex != setterParam.OutlineLabel.Core.Count - 1)
+                    FindMinCorridor(setterParam);
+            }
             
 
             if (setterParam.DividerPre.Lines.Count > 1)
@@ -196,8 +202,6 @@ namespace patternTest
                 return;
             }
 
-            //setterParam.OriginPost = laterStart;
-            //SetNextDivOrigin(setterParam);
             return;
         }
 
@@ -255,7 +259,7 @@ namespace patternTest
 
             if (originIndex - dividerIndex > 1)
             {
-                for(int i = originIndex+1; i<dividerIndex; i++)
+                for(int i = dividerIndex+1; i<originIndex; i++)
                 {
                     if ((coreSeg[i].Type == LineType.Corridor) &&
                         (coreSeg[i].Length >= Corridor.MinLengthForDoor))
@@ -298,9 +302,9 @@ namespace patternTest
         private static Boolean IsEndPt(DividingOrigin testOrigin)
         {
             double nearTolerance = 0.005;
-            Circle testCircle = new Circle(testOrigin.BaseLine.EndPt, nearTolerance);
-            PointContainment containState = testCircle.ToNurbsCurve().Contains(testOrigin.Point);
-            if (containState == PointContainment.Inside)
+            double distance = testOrigin.BaseLine.EndPt.DistanceTo(testOrigin.Point);
+            
+            if (distance <= nearTolerance)
                 return true;
 
             return false;
@@ -314,16 +318,16 @@ namespace patternTest
             Vector3d normal = originTest.BaseLine.UnitNormal;
             Polyline trimmed = setterParam.OutlineLabel.Trimmed;
             double coverAllLength = new BoundingBox(new List<Point3d>(trimmed)).Diagonal.Length * 2;
+            Line testLine = new Line(originTest.Point, originTest.Point + normal * coverAllLength);
 
-            foreach(RoomLine i in dividerTest.Lines)
+            foreach (RoomLine i in dividerTest.Lines)
             {
                 if (i.UnitTangent == normal)
                     continue;
-
-                Line testLine = new Line(originTest.Point, originTest.Point + normal * coverAllLength);
+               
                 Point3d crossPt = CCXTools.GetCrossPt(testLine, i.Liner);
 
-                if (PCXTools.IsPtOnLine(crossPt, i.Liner, 0.005))
+                if (PCXTools.IsPtOnLine(crossPt, i.Liner, 0.005)&&PCXTools.IsPtOnLine(crossPt, testLine, 0.005))
                     return true;                              
             }
 

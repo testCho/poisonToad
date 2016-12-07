@@ -28,8 +28,8 @@ namespace patternTest
         //field
         private static double scale = 1;
         private static double ONE_WAY_CORRIDOR_WIDTH = 1200;
-        private static double TWO_WAY_CORRIDOR_WIDTH = 1800;
-        private static double MINIMUM_ROOM_WIDTH = 3000;
+        private static double TWO_WAY_CORRIDOR_WIDTH = 1200;
+        private static double MINIMUM_ROOM_WIDTH = 1500;
         private static double MINIMUM_CORRIDOR_LENGTH = 1200; //임시
 
         //method

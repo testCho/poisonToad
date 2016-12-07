@@ -167,7 +167,6 @@ namespace patternTest
 
         public static DivMakerOutput DrawOrtho(DividerParams param)
         {
-            //Line orthoLine = PCXTools.ExtendFromPt(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
             Line orthoLine = PCXTools.PCXByEquation(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
             List<RoomLine> orthoList = new List<RoomLine>{ new RoomLine(orthoLine, LineType.Inner)};
 
@@ -280,7 +279,7 @@ namespace patternTest
             param.OriginPost.Point = param.OriginPost.BaseLine.StartPt;
             return DrawOrtho(param);
 
-        }
+        } 
 
         private static void SetPostStartToOrigin(DividerParams param)
         {

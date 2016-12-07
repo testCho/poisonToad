@@ -25,11 +25,14 @@ namespace patternTest
             double remainedArea = floorArea;
             double remainTolerance = 0.005;
 
+
+            //draw initial
             DividingLine dividerInitial = SetInitialDivider(outlineLabel);
             DividerParams paramInitial = new DividerParams(dividerInitial, dividerInitial.Origin, outlineLabel);
 
-            //scaledAreas.Count
-            for (int i = 0; i < scaledAreas.Count; i++)
+
+            //draw middle
+            for (int i = 0; i < scaledAreas.Count-1; i++)
             {
                 DivMakerOutput eachPartition = DividerMaker.DrawEachPartition(paramInitial, scaledAreas[i]);
                 partitionList.Add(eachPartition.Poly);
@@ -43,6 +46,9 @@ namespace patternTest
                     break;   
             }
 
+
+            //draw last
+            
             return partitionList;
         }
 
@@ -64,12 +70,10 @@ namespace patternTest
 
         }
 
-        //다음라인에서 그려본 다음 길이가 짧은 쪽부터 시작 <- 할 필요 없을 듯
         private static DividingLine DrawInitialDivider(RoomLine firstRoomLine, Polyline outlinePure)
         {
             DividingOrigin originInitial = new DividingOrigin(firstRoomLine.Liner.PointAt(0), firstRoomLine);
 
-            //Line lineInitial = PCXTools.ExtendFromPt(originInitial.Point, outlinePure, originInitial.BaseLine.UnitNormal);
             Line lineInitial = PCXTools.PCXByEquation(originInitial.Point, outlinePure, originInitial.BaseLine.UnitNormal);
             List<RoomLine> lineInitialLabeled = new List<RoomLine> { new RoomLine(lineInitial, LineType.Inner) };
             DividingLine dividerInitial = new DividingLine(lineInitialLabeled, originInitial);

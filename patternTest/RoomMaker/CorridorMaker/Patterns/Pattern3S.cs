@@ -31,7 +31,7 @@ namespace patternTest
         {
             List<double> lengthFactors = new List<double>();
             lengthFactors.Add(0.5);
-            lengthFactors.Add(0.5);
+            lengthFactors.Add(0.7);
 
             return lengthFactors;
         }

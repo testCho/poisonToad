@@ -82,6 +82,8 @@ namespace patternTest
             this.BaseLine = new RoomLine(otherOrigin.BaseLine);
         }
 
+        //method
+
         //property
         public Point3d Point { get; set; }
         public RoomLine BaseLine { get; set; }
