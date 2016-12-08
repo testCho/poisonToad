@@ -7,13 +7,13 @@ using System.IO;
 
 namespace patternTest
 {
-    class CornerMaker
+    class PartitionMakerCorner
     {
-        public static DivMakerOutput GetCorner(DividerParams param, double targetArea)
+        public static DivMakerOutput GetCorner(PartitionParam param, double targetArea)
         {
             //나중에 좀 더 일반화할 수 있을 듯
             List<RoomLine> coreSeg = param.OutlineLabel.Core;
-            int originIndex = coreSeg.FindIndex(i => i.Liner == param.OriginPost.Liner);
+            int originIndex = coreSeg.FindIndex(i => i.PureLine == param.OriginPost.BasePureLine);
             int preIndex = originIndex - 1;
             Point3d origin = param.OriginPost.Point;
             Polyline outline = param.OutlineLabel.Pure;
@@ -92,7 +92,7 @@ namespace patternTest
         }
 
         //중복코드 나중에 지워보자..
-        private static DivMakerOutput DrawAtNoFoldOutline(DividerParams param, double targetArea, List<Point3d> outlineVertex)
+        private static DivMakerOutput DrawAtNoFoldOutline(PartitionParam param, double targetArea, List<Point3d> outlineVertex)
         {
             int iterNum = 10;
             int breaker = 0;
@@ -110,9 +110,9 @@ namespace patternTest
             if (Math.Abs(dotProduct) < dotTolerance)
             {
                 int originIndex = param.OutlineLabel.Core.FindIndex
-                    (i => i.Liner == param.OriginPost.BaseLine.Liner);
+                    (i => i.PureLine == param.OriginPost.BasePureLine);
 
-                param.OriginPost = new DividingOrigin(origin, param.OutlineLabel.Core[originIndex-1]);
+                param.OriginPost = new PartitionOrigin(origin, param.OutlineLabel.Core[originIndex-1]);
                 mainPerp = VectorTools.RotateVectorXY(mainAlign, -Math.PI / 2);
                 isMainDirecPreDiv = true;
             }
@@ -133,14 +133,14 @@ namespace patternTest
                 if (isMainDirecPreDiv)
                     tempAnchor = origin + mainAlign * (mainLine.Length - tempStatus);
 
-                List<RoomLine> cornerDividingLines = new List<RoomLine>();
-                cornerDividingLines.Add(new RoomLine(new Line(origin, tempAnchor), LineType.Inner));
+                List<RoomLine> cornerPartitions = new List<RoomLine>();
+                cornerPartitions.Add(new RoomLine(new Line(origin, tempAnchor), LineType.Inner));
                 Line anchorToOutline = PCXTools.ExtendFromPt(tempAnchor, param.OutlineLabel.Pure, mainPerp);
-                cornerDividingLines.Add(new RoomLine(anchorToOutline, LineType.Inner));
+                cornerPartitions.Add(new RoomLine(anchorToOutline, LineType.Inner));
 
-                DividingLine tempDivider = new DividingLine(cornerDividingLines,param.OriginPost);
-                param.DividerPost = tempDivider;
-                Polyline tempPoly = DividerDrawer.GetPartitionOutline(param);
+                Partition tempPartition = new Partition(cornerPartitions,param.OriginPost);
+                param.PartitionPost = tempPartition;
+                Polyline tempPoly = RoomOutlineDrawer.GetRoomOutline(param);
                 polyOutput = tempPoly;
 
                 double tempArea = PolylineTools.GetArea(tempPoly);
@@ -161,7 +161,7 @@ namespace patternTest
             return new DivMakerOutput(polyOutput, param);
         }
 
-        private static DivMakerOutput DrawAtOneFoldOutline(DividerParams param, double targetArea, List<Point3d> outlineVertex)
+        private static DivMakerOutput DrawAtOneFoldOutline(PartitionParam param, double targetArea, List<Point3d> outlineVertex)
         {
             double dotTolerance = 0.005;
 
@@ -176,7 +176,7 @@ namespace patternTest
             return DrawAtMultiFoldOutline(param, targetArea, outlineVertex);                                    
         }
 
-        private static DivMakerOutput DrawAtMultiFoldOutline(DividerParams param, double targetArea, List<Point3d> outlineVertex)
+        private static DivMakerOutput DrawAtMultiFoldOutline(PartitionParam param, double targetArea, List<Point3d> outlineVertex)
         {
             Line mainLine = GetMainLine(param, outlineVertex);
             List<Point3d> canMakePerpVertex = new List<Point3d>();
@@ -188,9 +188,9 @@ namespace patternTest
             if (mainAlign != param.OriginPost.BaseLine.UnitNormal)
             {
                 int originIndex = param.OutlineLabel.Core.FindIndex
-                    (i => i.Liner == param.OriginPost.BaseLine.Liner);
+                    (i => i.PureLine == param.OriginPost.BasePureLine);
 
-                param.OriginPost = new DividingOrigin(origin, param.OutlineLabel.Core[originIndex - 1]);
+                param.OriginPost = new PartitionOrigin(origin, param.OutlineLabel.Core[originIndex - 1]);
                 mainPerp = VectorTools.RotateVectorXY(mainAlign, -Math.PI / 2);
             }
 
@@ -207,6 +207,10 @@ namespace patternTest
                 
             }
 
+            //SeivePerpVertex
+
+
+
             //DrawAtEachVertex
             List<DivMakerOutput> outputCandidate = new List<DivMakerOutput>();
             
@@ -215,18 +219,18 @@ namespace patternTest
                 Line vertexToMainLine = new Line(i, i - mainPerp * 1);
                 Point3d tempAnchor = CCXTools.GetCrossPt(mainLine, vertexToMainLine);
 
-                List<RoomLine> tempDivider = new List<RoomLine>();
-                tempDivider.Add(new RoomLine(new Line(origin, tempAnchor), LineType.Inner));
-                tempDivider.Add(new RoomLine(new Line(tempAnchor, i), LineType.Inner));
+                List<RoomLine> tempPartition = new List<RoomLine>();
+                tempPartition.Add(new RoomLine(new Line(origin, tempAnchor), LineType.Inner));
+                tempPartition.Add(new RoomLine(new Line(tempAnchor, i), LineType.Inner));
 
-                DividerParams tempParam = new DividerParams(param);
-                tempParam.DividerPost = new DividingLine(tempDivider, param.OriginPost);
-                Polyline tempPoly = DividerDrawer.GetPartitionOutline(param);
+                PartitionParam tempParam = new PartitionParam(param);
+                tempParam.PartitionPost = new Partition(tempPartition, param.OriginPost);
+                Polyline tempPoly = RoomOutlineDrawer.GetRoomOutline(param);
 
                 outputCandidate.Add(new DivMakerOutput(tempPoly, tempParam));
             }
 
-            outputCandidate.Add(DividerMaker.DrawOrtho(param));
+            outputCandidate.Add(PartitionMaker.DrawOrtho(param));
 
             //TestCandidate
             //나중에 수정.. 지금은 면적일치정도로만..
@@ -251,30 +255,31 @@ namespace patternTest
             if (Math.Abs(toPreCross.Length) < crossTolerance || Math.Abs(toPostCross.Length) < crossTolerance)
                 return false;
 
-            bool IsToPostNegZAlign = Vector3d.Multiply(toPostCross, -Vector3d.ZAxis)>0;
+            bool IsToPostNegZAlign = Vector3d.Multiply(toPostCross, -Vector3d.ZAxis) > 0;
             bool IsToPreZAlign = Vector3d.Multiply(toPreCross, Vector3d.ZAxis) > 0;
+            bool IsPreToPostZAlign = Vector3d.Multiply(preToPostCross, Vector3d.ZAxis) > 0;
 
             if (IsToPreZAlign && IsToPostNegZAlign)
                 return true;
 
             if (IsToPreZAlign && !IsToPostNegZAlign)
             {
-                if (preToPostCross.Length < -crossTolerance)
+                if (IsPreToPostZAlign)
                     return true;
                 return false;
             }
 
-            if(!IsToPreZAlign && IsToPostNegZAlign)
+            if (!IsToPreZAlign && IsToPostNegZAlign)
             {
-                if (preToPostCross.Length > crossTolerance)
+                if (IsPreToPostZAlign)
                     return true;
                 return false;
             }
 
-            return false;            
+            return false;
         }
 
-        private static Line GetMainLine(DividerParams param, List<Point3d> outlineVertex)
+        private static Line GetMainLine(PartitionParam param, List<Point3d> outlineVertex)
         {
             Point3d noFoldOrigin = param.OriginPost.Point;
             Line cornerLinePre = new Line(noFoldOrigin, outlineVertex.Last());

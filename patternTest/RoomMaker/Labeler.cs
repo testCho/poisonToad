@@ -98,7 +98,6 @@ namespace patternTest
         {
             List<RoomLine> labeledRoomBase = new List<RoomLine>();
 
-            //PolylineTools.SetAlignPolyline(trimmedUnion);
             List<Line> unlabeledSeg = trimmedUnion.GetSegments().ToList();
 
             Curve coreCrv = core.CoreLine.ToNurbsCurve();

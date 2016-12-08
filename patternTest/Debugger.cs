@@ -15,7 +15,7 @@ namespace patternTest
             Core core = new Core(coreLine, landing, upDirec);
             List<double> areaSet = new List<double> { 30, 30, 60 };
 
-            List<Polyline> result = RoomMaker.MakeRoom(areaSet, outline, core);
+            List<Polyline> result = FloorMaker.MakeFloor(areaSet, outline, core);
 
             return result;
         }

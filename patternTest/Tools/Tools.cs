@@ -911,7 +911,11 @@ namespace patternTest
             }
 
             crossPtCandidate.Sort((a, b) => (basePt.DistanceTo(a).CompareTo(basePt.DistanceTo(b))));
-            return new Line(basePt, crossPtCandidate[0]);
+
+            if (crossPtCandidate.Count != 0)
+                return new Line(basePt, crossPtCandidate[0]);
+            else
+                return new Line();
         }
 
         public static Boolean IsPtOnLine(Point3d testPt, Line testLine, double tolerance)

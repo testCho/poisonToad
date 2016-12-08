@@ -7,65 +7,65 @@ using System.IO;
 
 namespace patternTest
 {
-    class DividerDrawer
+    class RoomOutlineDrawer
     {
-        public static Polyline GetPartitionOutline(DividerParams param)
+        public static Polyline GetRoomOutline(PartitionParam param)
         {
-            DividingLine dividerPre = param.DividerPre;
-            DividingLine dividerPost = param.DividerPost;
+            Partition partitionPre = param.PartitionPre;
+            Partition partitionPost = param.PartitionPost;
             LabeledOutline outlineLabeled = param.OutlineLabel;
 
             List<Point3d> partitionVertex = new List<Point3d>();
 
-            //코어쪽 꼭지점 추가, divider끼리 겹치는 경우는 아마 없을 것..
-            Point3d divPreOriginEnd = dividerPre.Origin.BaseLine.PointAt(1);
-            Point3d divPostOriginStart = dividerPost.Origin.BaseLine.PointAt(0);
+            //코어쪽 꼭지점 추가, partition끼리 겹치는 경우는 아마 없을 것..
+            Point3d divPreOriginEnd = partitionPre.Origin.BaseLine.PointAt(1);
+            Point3d divPostOriginStart = partitionPost.Origin.BaseLine.PointAt(0);
 
-            int startIndex = outlineLabeled.Core.FindIndex(i => i.Liner == dividerPre.Origin.Liner);
-            int endIndex = outlineLabeled.Core.FindIndex(i => i.Liner == dividerPost.Origin.Liner);
+            int startIndex = outlineLabeled.Core.FindIndex(i => i.PureLine == partitionPre.Origin.BasePureLine);
+            int endIndex = outlineLabeled.Core.FindIndex(i => i.PureLine == partitionPost.Origin.BasePureLine);
 
             if (startIndex == endIndex) // 시작점, 끝점 같은 경우
             {
-                partitionVertex.Add(dividerPre.Origin.Point);
-                partitionVertex.Add(dividerPost.Origin.Point);
+                partitionVertex.Add(partitionPre.Origin.Point);
+                partitionVertex.Add(partitionPost.Origin.Point);
             }
 
             else
             {
-                if (divPreOriginEnd == dividerPre.Origin.Point)
+                if (divPreOriginEnd == partitionPre.Origin.Point)
                     startIndex++;
 
-                if (divPostOriginStart == dividerPost.Origin.Point)
+                if (divPostOriginStart == partitionPost.Origin.Point)
                     endIndex--;
 
                 if (startIndex == endIndex)
                 {
-                    partitionVertex.Add(dividerPre.Origin.Point);
-                    partitionVertex.Add(dividerPost.Origin.Point);
+                    partitionVertex.Add(partitionPre.Origin.Point);
+                    partitionVertex.Add(partitionPost.Origin.Point);
                 }
                 else
                 {
-                    partitionVertex.Add(dividerPre.Origin.Point);
+                    partitionVertex.Add(partitionPre.Origin.Point);
 
                     for (int i = startIndex; i < endIndex; i++)
                         partitionVertex.Add(outlineLabeled.Core[i].PointAt(1));
 
-                    partitionVertex.Add(dividerPost.Origin.Point);
+                    partitionVertex.Add(partitionPost.Origin.Point);
                 }
             }
 
-            //dividerPost 추가
-            for (int i = 0; i < dividerPost.Lines.Count; i++)
-                partitionVertex.Add(dividerPost.Lines[i].PointAt(1));
+            //partitionPost 추가
+            for (int i = 0; i < partitionPost.Lines.Count; i++)
+                partitionVertex.Add(partitionPost.Lines[i].PointAt(1));
 
 
             //아웃라인쪽 꼭지점 추가
-            Point3d dividerPreEnd = dividerPre.Lines.Last().PointAt(1);
-            Point3d dividerPostEnd = dividerPost.Lines.Last().PointAt(1);
+            Point3d partitionPreEnd = partitionPre.Lines.Last().PointAt(1);
+            Point3d partitionPostEnd = partitionPost.Lines.Last().PointAt(1);
 
             List<Line> outlineSeg = outlineLabeled.Pure.GetSegments().ToList();
-            double paramPreEndOnOut = outlineLabeled.Pure.ClosestParameter(dividerPreEnd);
-            double paramCurrentEndOnOut = outlineLabeled.Pure.ClosestParameter(dividerPostEnd);
+            double paramPreEndOnOut = outlineLabeled.Pure.ClosestParameter(partitionPreEnd);
+            double paramCurrentEndOnOut = outlineLabeled.Pure.ClosestParameter(partitionPostEnd);
 
             double paramCurrentCeiling = Math.Ceiling(paramCurrentEndOnOut);
             double paramPreFloor = Math.Floor(paramPreEndOnOut);
@@ -112,9 +112,9 @@ namespace patternTest
             }
 
 
-            //dividerPre 추가
-            for (int i = 0; i < dividerPre.Lines.Count; i++)
-                partitionVertex.Add(dividerPre.Lines[dividerPre.Lines.Count - 1 - i].PointAt(1));
+            //partitionPre 추가
+            for (int i = 0; i < partitionPre.Lines.Count; i++)
+                partitionVertex.Add(partitionPre.Lines[partitionPre.Lines.Count - 1 - i].PointAt(1));
 
             partitionVertex.Add(partitionVertex[0]);
             return new Polyline(partitionVertex);

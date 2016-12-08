@@ -7,13 +7,13 @@ using System.IO;
 
 namespace patternTest
 {
-    class DividerSetter
+    class PartitionSetter
     {
         //main method
         public static RoomLine FindNearestCorridor(List<RoomLine> coreSeg, RoomLine baseLine)
         {
             RoomLine nearestCorridor = new RoomLine();
-            int baseIndex = coreSeg.FindIndex(i => (i.Liner == baseLine.Liner));
+            int baseIndex = coreSeg.FindIndex(i => (i.PureLine == baseLine.PureLine));
 
             for (int i = baseIndex; i < coreSeg.Count; i++)
             {
@@ -27,19 +27,19 @@ namespace patternTest
             return nearestCorridor;
         }
 
-        public static void SetNextDivOrigin(DividerParams setterParam)
+        public static void SetNextDivOrigin(PartitionParam setterParam)
         {
             if (!IsCorridorAvailable(setterParam))
             {
                int originIndex = setterParam.OutlineLabel.Core.FindIndex
-                    (i => i.Liner == setterParam.OriginPost.BaseLine.Liner);
+                    (i => i.PureLine == setterParam.OriginPost.BaseLine.PureLine);
 
                 if (originIndex != setterParam.OutlineLabel.Core.Count - 1)
                     FindMinCorridor(setterParam);
             }
             
 
-            if (setterParam.DividerPre.Lines.Count > 1)
+            if (setterParam.PartitionPre.Lines.Count > 1)
             {
                 SetOriginFromFoldedDiv(setterParam);
                 return;
@@ -52,10 +52,10 @@ namespace patternTest
 
         //method
         /*111공통된 부분 줄일 수 있음.. 일단은 구현*/
-        private static void FindMinCorridor(DividerParams setterParam)
+        private static void FindMinCorridor(PartitionParam setterParam)
         {
             RoomLine nearestCorridor = FindNearestCorridor(setterParam.OutlineLabel.Core, setterParam.OriginPost.BaseLine);
-            if (setterParam.OriginPost.Liner == nearestCorridor.Liner)
+            if (setterParam.OriginPost.BasePureLine == nearestCorridor.PureLine)
             {
                 FindCorrFromSameBase(setterParam);
                 return;
@@ -71,13 +71,13 @@ namespace patternTest
             Point3d nearestBase = nearestCorridor.StartPt;
             Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
 
-            DividingOrigin originNext = new DividingOrigin(baseWithMinCorridor, nearestCorridor);
+            PartitionOrigin originNext = new PartitionOrigin(baseWithMinCorridor, nearestCorridor);
 
             setterParam.OriginPost = originNext;
             return;
         }
 
-        private static void FindCorrFromSameBase(DividerParams setterParam)
+        private static void FindCorrFromSameBase(PartitionParam setterParam)
         {
             RoomLine nearestCorridor = setterParam.OriginPost.BaseLine;
 
@@ -93,30 +93,30 @@ namespace patternTest
             Point3d nearestBase = setterParam.OriginPost.Point;
             Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
 
-            DividingOrigin originNext = new DividingOrigin(baseWithMinCorridor, nearestCorridor);
+            PartitionOrigin originNext = new PartitionOrigin(baseWithMinCorridor, nearestCorridor);
 
             setterParam.OriginPost = originNext;
             return;
         }
         /* 여기까지111*/
 
-        private static void SetOriginNextStart(DividerParams setterParam)
+        private static void SetOriginNextStart(PartitionParam setterParam)
         {
             int currentIndex = setterParam.OutlineLabel.Core.FindIndex
-                   (i => (i.Liner == setterParam.OriginPost.Liner));
+                   (i => (i.PureLine == setterParam.OriginPost.BasePureLine));
 
             if (currentIndex == setterParam.OutlineLabel.Core.Count - 1)
                 return;
 
             RoomLine baseLineNext = setterParam.OutlineLabel.Core[currentIndex + 1];
-            setterParam.OriginPost = new DividingOrigin(baseLineNext.PointAt(0), baseLineNext);
+            setterParam.OriginPost = new PartitionOrigin(baseLineNext.PointAt(0), baseLineNext);
 
             return;
         }
 
-        private static void SetOriginFromSingleDiv(DividerParams setterParam)
+        private static void SetOriginFromSingleDiv(PartitionParam setterParam)
         {
-            if (setterParam.DividerPre.Origin.Liner == setterParam.OriginPost.Liner)
+            if (setterParam.PartitionPre.Origin.BasePureLine == setterParam.OriginPost.BasePureLine)
             {
                 SetOriginFromSameBase(setterParam);
                 return;
@@ -126,17 +126,17 @@ namespace patternTest
             return;
         }
 
-        private static void SetOriginFromFoldedDiv(DividerParams setterParam)
+        private static void SetOriginFromFoldedDiv(PartitionParam setterParam)
         {
-            Vector3d secondDirec = setterParam.DividerPre.Lines[1].UnitTangent;
+            Vector3d secondDirec = setterParam.PartitionPre.Lines[1].UnitTangent;
 
-            if (IsCCwPerp(setterParam.DividerPre.FirstDirec, secondDirec))
+            if (IsCCwPerp(setterParam.PartitionPre.FirstDirec, secondDirec))
             {
                 SetOriginFromSingleDiv(setterParam);
                 return;
             }
 
-            if (secondDirec.IsParallelTo(setterParam.OriginPost.Liner.UnitTangent) == 1)
+            if (secondDirec.IsParallelTo(setterParam.OriginPost.BasePureLine.UnitTangent) == 1)
             {
                 SetOriginFromOtherBase(setterParam);
                 return;
@@ -145,7 +145,7 @@ namespace patternTest
             return;
         }
 
-        private static void SetOriginFromSameBase(DividerParams setterParam)
+        private static void SetOriginFromSameBase(PartitionParam setterParam)
         {
             if (IsEndPt(setterParam.OriginPost))
             {
@@ -156,11 +156,11 @@ namespace patternTest
             return; 
         }
 
-        private static void SetOriginFromOtherBase(DividerParams setterParam)
+        private static void SetOriginFromOtherBase(PartitionParam setterParam)
         {
             if(IsCrossed(setterParam))
             {
-                Point3d perpPt = MakePerpPt(setterParam.DividerPre, setterParam.OriginPost);
+                Point3d perpPt = MakePerpPt(setterParam.PartitionPre, setterParam.OriginPost);
 
                 if (IsOnOriginBase(perpPt, setterParam.OriginPost))
                 {
@@ -179,10 +179,10 @@ namespace patternTest
             return;
         }
 
-        private static void SetOriginFromEndPt(DividerParams setterParam)
+        private static void SetOriginFromEndPt(PartitionParam setterParam)
         {
             int testIndex = setterParam.OutlineLabel.Core.FindIndex
-                (i => (i.Liner == setterParam.OriginPost.Liner));
+                (i => (i.PureLine == setterParam.OriginPost.BasePureLine));
 
             if (testIndex == setterParam.OutlineLabel.Core.Count - 1)
                 return;
@@ -190,8 +190,8 @@ namespace patternTest
             RoomLine formerCornerLine = setterParam.OutlineLabel.Core[testIndex];
             RoomLine laterCornerLine = setterParam.OutlineLabel.Core[testIndex + 1];
 
-            DividingOrigin laterStart = new DividingOrigin(laterCornerLine.Liner.PointAt(0),laterCornerLine);
-            DividingOrigin laterEnd = new DividingOrigin(laterCornerLine.Liner.PointAt(1),laterCornerLine);
+            PartitionOrigin laterStart = new PartitionOrigin(laterCornerLine.PureLine.PointAt(0),laterCornerLine);
+            PartitionOrigin laterEnd = new PartitionOrigin(laterCornerLine.PureLine.PointAt(1),laterCornerLine);
 
             CornerState cornerStat = GetCCWCornerState(formerCornerLine.UnitTangent, laterCornerLine.UnitTangent);
 
@@ -205,11 +205,11 @@ namespace patternTest
             return;
         }
 
-        private static void SetOriginFromPerpNext(DividerParams setterParam)
+        private static void SetOriginFromPerpNext(PartitionParam setterParam)
         {
-            Vector3d cornerPre = new Vector3d(setterParam.OriginPost.Liner.UnitTangent);
+            Vector3d cornerPre = new Vector3d(setterParam.OriginPost.BasePureLine.UnitTangent);
             SetOriginNextStart(setterParam);
-            Vector3d cornerPost = setterParam.OriginPost.Liner.UnitTangent;
+            Vector3d cornerPost = setterParam.OriginPost.BasePureLine.UnitTangent;
 
             CornerState cornerStat = GetCCWCornerState(cornerPre, cornerPost);
 
@@ -222,13 +222,13 @@ namespace patternTest
 
 
         //decider method
-        private static Boolean IsCorridorAvailable(DividerParams setterParam)
+        private static Boolean IsCorridorAvailable(PartitionParam setterParam)
         {
             int dividerIndex = setterParam.OutlineLabel.Core.FindIndex
-                (i => i.Liner == setterParam.DividerPre.Origin.Liner);
+                (i => i.PureLine == setterParam.PartitionPre.Origin.BasePureLine);
 
             int originIndex = setterParam.OutlineLabel.Core.FindIndex
-                (i => i.Liner == setterParam.OriginPost.Liner);
+                (i => i.PureLine == setterParam.OriginPost.BasePureLine);
 
             if (dividerIndex == originIndex)
                 return IsAvailableOnSameBase(setterParam);
@@ -236,13 +236,13 @@ namespace patternTest
             return IsAvailableOnOtherBase(setterParam, dividerIndex, originIndex);
         }
 
-        private static Boolean IsAvailableOnOtherBase(DividerParams setterParam, int dividerIndex, int originIndex)
+        private static Boolean IsAvailableOnOtherBase(PartitionParam setterParam, int dividerIndex, int originIndex)
         {
             List<RoomLine> coreSeg = setterParam.OutlineLabel.Core;
             if (coreSeg[dividerIndex].Type == LineType.Corridor)
             {
                 double toEndLength = 
-                    new Vector3d(coreSeg[dividerIndex].EndPt - setterParam.DividerPre.Origin.Point).Length;
+                    new Vector3d(coreSeg[dividerIndex].EndPt - setterParam.PartitionPre.Origin.Point).Length;
 
                 if (toEndLength >= Corridor.MinLengthForDoor)
                     return true;
@@ -270,12 +270,12 @@ namespace patternTest
             return false;
         }
 
-        private static Boolean IsAvailableOnSameBase(DividerParams setterParam)
+        private static Boolean IsAvailableOnSameBase(PartitionParam setterParam)
         {
             if (setterParam.OriginPost.Type != LineType.Corridor)
                 return false;
 
-            double dividerToOrigin = new Vector3d(setterParam.OriginPost.Point - setterParam.DividerPre.Origin.Point).Length;
+            double dividerToOrigin = new Vector3d(setterParam.OriginPost.Point - setterParam.PartitionPre.Origin.Point).Length;
 
             if (dividerToOrigin < Corridor.MinLengthForDoor)
                 return false;
@@ -299,7 +299,7 @@ namespace patternTest
             return false;
         }
 
-        private static Boolean IsEndPt(DividingOrigin testOrigin)
+        private static Boolean IsEndPt(PartitionOrigin testOrigin)
         {
             double nearTolerance = 0.005;
             double distance = testOrigin.BaseLine.EndPt.DistanceTo(testOrigin.Point);
@@ -310,10 +310,10 @@ namespace patternTest
             return false;
         }
 
-        private static Boolean IsCrossed(DividerParams setterParam)
+        private static Boolean IsCrossed(PartitionParam setterParam)
         {
-            DividingLine dividerTest = setterParam.DividerPre;
-            DividingOrigin originTest = setterParam.OriginPost;
+            Partition dividerTest = setterParam.PartitionPre;
+            PartitionOrigin originTest = setterParam.OriginPost;
 
             Vector3d normal = originTest.BaseLine.UnitNormal;
             Polyline trimmed = setterParam.OutlineLabel.Trimmed;
@@ -325,16 +325,16 @@ namespace patternTest
                 if (i.UnitTangent == normal)
                     continue;
                
-                Point3d crossPt = CCXTools.GetCrossPt(testLine, i.Liner);
+                Point3d crossPt = CCXTools.GetCrossPt(testLine, i.PureLine);
 
-                if (PCXTools.IsPtOnLine(crossPt, i.Liner, 0.005)&&PCXTools.IsPtOnLine(crossPt, testLine, 0.005))
+                if (PCXTools.IsPtOnLine(crossPt, i.PureLine, 0.005)&&PCXTools.IsPtOnLine(crossPt, testLine, 0.005))
                     return true;                              
             }
 
             return false;     
         }
 
-        private static Point3d MakePerpPt(DividingLine dividerTest, DividingOrigin originTest)
+        private static Point3d MakePerpPt(Partition dividerTest, PartitionOrigin originTest)
         {
             //dSide: divider 쪽, oSide: origin 쪽
             Point3d dSidePt = dividerTest.Lines[dividerTest.Lines.Count - 1].PointAt(1);
@@ -365,7 +365,7 @@ namespace patternTest
             return new Point3d(perpX, perpY, 0);
         }
 
-        private static Boolean IsOnOriginBase(Point3d ptTest, DividingOrigin originTest)
+        private static Boolean IsOnOriginBase(Point3d ptTest, PartitionOrigin originTest)
         {    
             Line testLine = new Line(originTest.Point, originTest.BaseLine.PointAt(1));
             return PCXTools.IsPtOnLine(ptTest, testLine, 0);

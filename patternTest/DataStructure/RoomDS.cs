@@ -38,45 +38,47 @@ namespace patternTest
 
         public RoomLine(Line line, LineType type)
         {
-            this.Liner = line;
+            this.PureLine = line;
             this.Type = type;
         }
 
         public RoomLine(RoomLine roomLine)
         {
-            this.Liner = roomLine.Liner;
+            this.PureLine = roomLine.PureLine;
             this.Type = roomLine.Type;
         }
 
         //method
         public Point3d PointAt(double t)
         {
-            return this.Liner.PointAt(t);
+            return this.PureLine.PointAt(t);
         }
 
         //property
-        public Line Liner { get; private set; }
+        public Line PureLine { get; private set; }
         public LineType Type { get; private set; }
-        public double Length { get { return Liner.Length; } private set { } }
-        public Vector3d UnitTangent { get { return Liner.UnitTangent; } private set { } }
+        public double Length { get { return PureLine.Length; } private set { } }
+        public Vector3d UnitTangent { get { return PureLine.UnitTangent; } private set { } }
         public Vector3d UnitNormal { get { return VectorTools.RotateVectorXY(UnitTangent, Math.PI / 2); } private set { } }
-        public Point3d StartPt { get { return Liner.PointAt(0); } private set { } }
-        public Point3d EndPt { get { return Liner.PointAt(1); } private set { } }
+        public Point3d StartPt { get { return PureLine.PointAt(0); } private set { } }
+        public Point3d EndPt { get { return PureLine.PointAt(1); } private set { } }
     }
 
-    public class DividingOrigin
+    public class PartitionOrigin
     {
-        public DividingOrigin(Point3d basePt, RoomLine baseLine)
+        public PartitionOrigin(Point3d basePt, RoomLine baseLine)
         {
             this.Point = basePt;
             this.BaseLine = baseLine;
         }
 
-        public DividingOrigin()
+        public PartitionOrigin()
         {
+            this.Point = Point3d.Unset;
+            this.BaseLine = new RoomLine();
         }
 
-        public DividingOrigin(DividingOrigin otherOrigin)
+        public PartitionOrigin(PartitionOrigin otherOrigin)
         {
             this.Point = otherOrigin.Point;
             this.BaseLine = new RoomLine(otherOrigin.BaseLine);
@@ -88,33 +90,38 @@ namespace patternTest
         public Point3d Point { get; set; }
         public RoomLine BaseLine { get; set; }
         public LineType Type { get { return BaseLine.Type; } private set { } }
-        public Line Liner { get { return BaseLine.Liner; } private set { } }
+        public Line BasePureLine { get { return BaseLine.PureLine; } private set { } }
     }
 
-    public class DividingLine
+    public class Partition
     {
-        public DividingLine(List<RoomLine> dividingLine, DividingOrigin thisLineOrigin)
+        public Partition(List<RoomLine> dividingLine, PartitionOrigin thisLineOrigin)
         {
             this.Lines = dividingLine;
             this.Origin = thisLineOrigin;
         }
 
-        public DividingLine(DividingLine otherDivider)
+        public Partition(Partition otherPartition)
         {
-            this.Lines = new List<RoomLine>();
-            this.Origin = new DividingOrigin();
+            List<RoomLine> cloneLines = new List<RoomLine>();
+            PartitionOrigin cloneOrigin = new PartitionOrigin();
 
-            if (otherDivider!=null && otherDivider.BaseLine!=null)
-            {
-                for (int i = 0; i < otherDivider.Lines.Count; i++)
-                    this.Lines.Add(otherDivider.Lines[i]);
+            //assign
+            foreach (RoomLine i in otherPartition.Lines)
+                    cloneLines.Add(i);
 
-                this.Origin = new DividingOrigin(otherDivider.Origin);
-            }            
+            cloneOrigin = new PartitionOrigin(otherPartition.Origin);            
+
+            //return
+            this.Lines = cloneLines;
+            this.Origin = cloneOrigin;
         }
 
-        public DividingLine()
-        { }
+        public Partition()
+        {
+            this.Lines = new List<RoomLine>();
+            this.Origin = new PartitionOrigin();
+        }
 
         //method
         public double GetLength()
@@ -128,57 +135,62 @@ namespace patternTest
 
         //property
         public List<RoomLine> Lines { get; set; }
-        public Vector3d FirstDirec { get { return Lines[0].Liner.UnitTangent; } private set { } }
-        public Vector3d LastDirec { get { return Lines[Lines.Count-1].Liner.UnitTangent; } private set { } }
-        public DividingOrigin Origin { get; set; }
+        public Vector3d FirstDirec { get { return Lines.First().PureLine.UnitTangent; } private set { } }
+        public Vector3d LastDirec { get { return Lines.Last().PureLine.UnitTangent; } private set { } }
+        public PartitionOrigin Origin { get; set; }
         public RoomLine BaseLine { get { return Origin.BaseLine; } private set { } }
     }
 
-    public class DividerParams
+    public class PartitionParam
     {
-        public DividerParams(DividingLine dividerPre, DividingOrigin originPost, LabeledOutline outlineLabel)
+        public PartitionParam(Partition dividerPre, PartitionOrigin originPost, LabeledOutline outlineLabel)
         {
-            this.DividerPre = dividerPre;
+            this.PartitionPre = dividerPre;
+            this.PartitionPost = new Partition();
+            this.OriginPost = originPost;
+            this.OutlineLabel = outlineLabel;            
+        }
+
+        public PartitionParam(Partition dividerPre, Partition dividerPost, PartitionOrigin originPost, LabeledOutline outlineLabel)
+        {
+            this.PartitionPre = dividerPre;
+            this.PartitionPost = dividerPost;
             this.OriginPost = originPost;
             this.OutlineLabel = outlineLabel;
         }
 
-        public DividerParams(DividingLine dividerPre, DividingLine dividerPost, DividingOrigin originPost, LabeledOutline outlineLabel)
+        public PartitionParam(PartitionParam otherParam)
         {
-            this.DividerPre = dividerPre;
-            this.DividerPost = dividerPost;
-            this.OriginPost = originPost;
-            this.OutlineLabel = outlineLabel;
+            this.PartitionPre = new Partition(otherParam.PartitionPre);
+            this.PartitionPost = new Partition(otherParam.PartitionPost);
+            this.OriginPost = new PartitionOrigin(otherParam.OriginPost);
+            this.OutlineLabel = otherParam.OutlineLabel;
         }
 
-        public DividerParams(DividerParams otherParams)
+        public PartitionParam()
         {
-            this.DividerPre = new DividingLine(otherParams.DividerPre);
-            this.DividerPost = new DividingLine(otherParams.DividerPost);
-            this.OriginPost = new DividingOrigin(otherParams.OriginPost);
-            this.OutlineLabel = otherParams.OutlineLabel;
-        }
-
-        public DividerParams()
-        {
+            this.PartitionPre = new Partition();
+            this.PartitionPost = new Partition();
+            this.OriginPost = new PartitionOrigin();
+            this.OutlineLabel = new LabeledOutline();
         }
 
         //method
         public void PostToPre()
         {
-            this.DividerPre = this.DividerPost;
+            this.PartitionPre = this.PartitionPost;
         }
 
         //property
-        public DividingLine DividerPre { get; set; }
-        public DividingLine DividerPost { get; set; }
-        public DividingOrigin OriginPost { get; set; }
+        public Partition PartitionPre { get; set; }
+        public Partition PartitionPost { get; set; }
+        public PartitionOrigin OriginPost { get; set; }
         public LabeledOutline OutlineLabel { get; set; }
     }
 
     public class DivMakerOutput
     {
-        public DivMakerOutput(Polyline polyline, DividerParams paramNext)
+        public DivMakerOutput(Polyline polyline, PartitionParam paramNext)
         {
             this.Poly = polyline;
             this.DivParams = paramNext;
@@ -190,12 +202,12 @@ namespace patternTest
         public DivMakerOutput(DivMakerOutput otherOutput)
         {
             this.Poly = otherOutput.Poly;
-            this.DivParams = new DividerParams(otherOutput.DivParams);
+            this.DivParams = new PartitionParam(otherOutput.DivParams);
         }
 
         //property
         public Polyline Poly { get; set; }
-        public DividerParams DivParams { get; set; }
+        public PartitionParam DivParams { get; set; }
     }
 
     //enum
