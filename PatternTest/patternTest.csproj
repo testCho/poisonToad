@@ -44,29 +44,37 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Tools\CCXTools.cs" />
+    <Compile Include="Tools\PCXTools.cs" />
+    <Compile Include="Tools\PointTools.cs" />
+    <Compile Include="Tools\DoubleTools.cs" />
+    <Compile Include="Tools\RectangleTools.cs" />
+    <Compile Include="Tools\CurveTools.cs" />
     <Compile Include="Debugger.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\CorridorDecider.cs" />
+    <Compile Include="mockup.cs" />
+    <Compile Include="Tools\PolylineTools.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\CorridorDecider.cs" />
     <Compile Include="DataStructure\CorridorDS.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern3S.cs" />
-    <Compile Include="RoomMaker\PartitionMaker\PartitionMakerCorner.cs" />
-    <Compile Include="RoomMaker\PartitionMaker\RoomOutlineDrawer.cs" />
-    <Compile Include="RoomMaker\PartitionMaker\PartitonMaker.cs" />
-    <Compile Include="RoomMaker\PartitionMaker\PartitonSetter.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern3S.cs" />
+    <Compile Include="FloorMaker\RoomMaker\PartitionMakerCorner.cs" />
+    <Compile Include="FloorMaker\RoomMaker\RoomOutlineDrawer.cs" />
+    <Compile Include="FloorMaker\RoomMaker\PartitonMaker.cs" />
+    <Compile Include="FloorMaker\RoomMaker\PartitonSetter.cs" />
     <Compile Include="Issue.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\CorridorMaker.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\CorridorMaker.cs" />
     <Compile Include="DataStructure\RoomDS.cs" />
-    <Compile Include="RoomMaker\Labeler.cs" />
-    <Compile Include="RoomMaker\PartitionMaker\RoomMaker.cs" />
-    <Compile Include="RoomMaker\FloorMaker.cs" />
+    <Compile Include="FloorMaker\Labeler.cs" />
+    <Compile Include="FloorMaker\RoomMaker\RoomMaker.cs" />
+    <Compile Include="FloorMaker\FloorMaker.cs" />
     <Compile Include="Tools\Extend.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern1S.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern2S.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern3D.cs" />
-    <Compile Include="RoomMaker\CorridorMaker\Patterns\Pattern4S.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern1S.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern2S.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern3D.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern4S.cs" />
     <Compile Include="patternTestCommand.cs" />
     <Compile Include="patternTestPlugIn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tools\Tools.cs" />
+    <Compile Include="Tools\VectorTools.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

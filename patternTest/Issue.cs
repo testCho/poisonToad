@@ -30,7 +30,6 @@ namespace patternTest
 
     */
 
-
     /* 
      <PartitionMaker issue>
 
@@ -44,12 +43,6 @@ namespace patternTest
      IsOverlap 판정 확실히 할것..
      꺾인 분할선에서 아웃라인 쪽 분할선 점들이 겹치는 경우..
     */
-
-    /*
-    <DividerMaker issue>
-
-    안쪽 코너 그리는 알고리즘 추가 필요함..
-   */
 
     /*
     <합칠 떄 issue>

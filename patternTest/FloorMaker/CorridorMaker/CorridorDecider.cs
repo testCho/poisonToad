@@ -31,23 +31,23 @@ namespace patternTest
                 {
                     //return null;
                     if (IsHEnoughOff)
-                        return new Pattern3D();
+                        return new Corr_TwoWayHorizontal2();
 
-                    return new Pattern3S();
+                    return new Corr_TwoWayHorizontal1();
                 }
 
 
                 if (IsHEnoughOff)
-                    return new Pattern3D();
+                    return new Corr_TwoWayHorizontal2();
 
-                return new Pattern3S();
+                return new Corr_TwoWayHorizontal1();
             }
 
             else if (IsVerticalOff)
-                return new Pattern2S();
+                return new Corr_OneWayVertical1();
 
             else
-                return new Pattern1S();
+                return new Corr_OneWayHorizontal1();
         }
     }
 }

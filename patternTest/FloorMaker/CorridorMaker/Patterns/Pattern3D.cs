@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern3D: ICorridorPattern
+    class Corr_TwoWayHorizontal2: ICorridorPattern
     {
         public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
         {

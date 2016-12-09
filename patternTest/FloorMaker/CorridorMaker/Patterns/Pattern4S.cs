@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class Pattern4S: ICorridorPattern //많이 고쳐야함 --;
+    class Corr_TwoWayVertical1: ICorridorPattern //많이 고쳐야함 --;
     {
         public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
         {

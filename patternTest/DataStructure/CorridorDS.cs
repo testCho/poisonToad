@@ -42,11 +42,6 @@ namespace patternTest
     }
 
 
-    //enum
-    public enum corridorType { SH, SV, DH1, DH2, DV }
-    //복도타입 - S:single 편복도, D:double 중복도, H:horizontal 횡축, V:vertical 종축, 1:단방향, 2:양방향
-
-
     //interface
     interface ICorridorPattern
     {

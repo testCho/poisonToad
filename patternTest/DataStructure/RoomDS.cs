@@ -14,19 +14,17 @@ namespace patternTest
         public LabeledOutline()
         { }
 
-        public LabeledOutline(Polyline trimmedOutline, Polyline pureOutline, List<RoomLine> labeledCore, Polyline coreUnion)
+        public LabeledOutline(List<Polyline> booleanDifference, List<Polyline> pureOutline, List<List<RoomLine>> labeledCore)
         {
-            this.Trimmed = trimmedOutline;
+            this.Difference = booleanDifference;
             this.Pure = pureOutline;
             this.Core = labeledCore;
-            this.CoreUnion = coreUnion;
         }
 
         //property
-        public Polyline Trimmed { get; private set; }
-        public Polyline CoreUnion { get; private set; }
-        public Polyline Pure { get; private set; }
-        public List<RoomLine> Core { get; private set; }
+        public List<Polyline> Difference { get; private set; }
+        public List<Polyline> Pure { get; private set; }
+        public List<List<RoomLine>> Core { get; private set; }
 
     }
 
