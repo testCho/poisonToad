@@ -34,6 +34,16 @@ namespace patternTest
             //draw middle
             for (int i = 0; i < scaledAreas.Count; i++)
             {
+                if(i == scaledAreas.Count-1)
+                {
+                    PartitionParam lastParam = new PartitionParam(paramInitial);
+                    lastParam.OriginPost.BaseLine = paramInitial.OutlineLabel.Core.Last();
+                    lastParam.OriginPost.Point = paramInitial.OutlineLabel.Core.Last().EndPt;                    
+                    DivMakerOutput lastPartition = PartitionMaker.DrawOrtho(lastParam);
+                    partitionList.Add(lastPartition.Poly);
+                    break;
+                }
+
                 DivMakerOutput eachPartition = PartitionMaker.DrawEachPartition(paramInitial, scaledAreas[i]);
                 partitionList.Add(eachPartition.Poly);
 

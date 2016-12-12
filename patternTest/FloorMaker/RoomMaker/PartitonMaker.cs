@@ -247,8 +247,7 @@ namespace patternTest
 
             if (cornerStat == PartitionSetter.CornerState.Concave)
             {
-                PartitionOrigin newOrigin = new PartitionOrigin(coreSeg[indexCurrent + 2].StartPt, coreSeg[indexCurrent + 2]);
-                param.OriginPost = newOrigin;
+                SetPostParallelToOrigin(param);
                 return DrawOrtho(param);
             }
 
