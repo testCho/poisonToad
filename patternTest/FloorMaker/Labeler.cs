@@ -10,7 +10,7 @@ namespace patternTest
     class Labeler
     {
         //main
-        public static LabeledOutline GetOutlineLabel(Polyline outline, Core core, List<Polyline> corridor)
+        public static List<LabeledOutline> GetOutlineLabel(Polyline outline, Core core, List<Polyline> corridor)
         {
             //코어 외곽선
             Polyline coreUnion = GetCoreUnion(core, corridor);
@@ -26,8 +26,33 @@ namespace patternTest
             List<Polyline> corePure = TrimDifferenceByOutline(difference, outline);
             List<List<RoomLine>> coreLabeled = LabelUnionSeg(corePure, core, corridor);
 
-            LabeledOutline output = new LabeledOutline(difference, outlinePure, coreLabeled);
+
+            List<LabeledOutline> output = DistributeLabel(difference, outlinePure, coreLabeled, coreUnion);
             return output;
+        }
+
+        private static List<LabeledOutline> DistributeLabel(List<Polyline> difference, List<Polyline> outlinePure, List<List<RoomLine>> coreLabeled, Polyline coreUnion)
+        {
+            List<LabeledOutline> distributedLabels = new List<LabeledOutline>();
+
+            if (outlinePure.Count == 1 && outlinePure.First().IsClosed)
+            {
+                LabeledOutline nonSeperatedLabel = new LabeledOutline(difference.First(), outlinePure.First(), coreLabeled.First());
+                nonSeperatedLabel.DifferenceArea = PolylineTools.GetArea(difference.First()) - PolylineTools.GetArea(coreUnion);
+                distributedLabels.Add(nonSeperatedLabel);
+                return distributedLabels;
+            }
+
+            int seperatedCount = difference.Count;
+
+            for (int i =0; i< seperatedCount; i++)
+            {
+                LabeledOutline seperatedLabel = new LabeledOutline(difference[i], outlinePure[i], coreLabeled[i]);
+                seperatedLabel.DifferenceArea = PolylineTools.GetArea(difference[i]);
+                distributedLabels.Add(seperatedLabel);
+            }
+
+            return distributedLabels;
         }
 
 
@@ -129,7 +154,6 @@ namespace patternTest
                 pureCore.AddRange(tempTrimmed);
             }
 
-            //코어가 아웃라인에 닿지 않는 경우 처리
             foreach (Polyline i in pureCore)
             {
                 if (i.IsClosed)

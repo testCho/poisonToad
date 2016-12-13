@@ -73,7 +73,7 @@ namespace patternTest
                     return -1;
                 else
 
-                return 1;
+                    return 1;
             });
 
             double finalParam = new double();
@@ -83,4 +83,6 @@ namespace patternTest
             return -new Line(basePt, closestPt).UnitTangent;
         }
     }
+
+
 }

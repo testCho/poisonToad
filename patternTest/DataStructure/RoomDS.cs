@@ -14,7 +14,7 @@ namespace patternTest
         public LabeledOutline()
         { }
 
-        public LabeledOutline(List<Polyline> booleanDifference, List<Polyline> pureOutline, List<List<RoomLine>> labeledCore)
+        public LabeledOutline(Polyline booleanDifference, Polyline pureOutline, List<RoomLine> labeledCore)
         {
             this.Difference = booleanDifference;
             this.Pure = pureOutline;
@@ -22,9 +22,10 @@ namespace patternTest
         }
 
         //property
-        public List<Polyline> Difference { get; private set; }
-        public List<Polyline> Pure { get; private set; }
-        public List<List<RoomLine>> Core { get; private set; }
+        public Polyline Difference { get; private set; }
+        public double DifferenceArea { get; set; }
+        public Polyline Pure { get; private set; }
+        public List<RoomLine> Core { get; private set; }
 
     }
 

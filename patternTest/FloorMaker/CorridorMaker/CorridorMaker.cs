@@ -100,8 +100,8 @@ namespace patternTest
             Point3d basePt = baseLine.PointAt(0.5) - (core.UpstairDirec / core.UpstairDirec.Length) * SetBasePtVLimit(core, baseLine) / 2;
 
             //set horizontalAxis, 횡축은 외곽선에서 더 먼 쪽을 선택
-            Line horizonReached1 = PCXTools.ExtendFromPt(basePt, outline, baseLine.UnitTangent);
-            Line horizonReached2 = PCXTools.ExtendFromPt(basePt, outline, -baseLine.UnitTangent);
+            Line horizonReached1 = PCXTools.PCXByEquation(basePt, outline, baseLine.UnitTangent);
+            Line horizonReached2 = PCXTools.PCXByEquation(basePt, outline, -baseLine.UnitTangent);
 
             if (horizonReached1.Length > horizonReached2.Length)
             {
@@ -115,18 +115,18 @@ namespace patternTest
             }
 
             //set verticalAxis, 종축은 외곽선에서 더 가까운 쪽을 선택
-            Line verticalReached1 = PCXTools.ExtendFromPt(basePt, outline, core.UpstairDirec);
-            Line verticalReached2 = PCXTools.ExtendFromPt(basePt, outline, -core.UpstairDirec);
+            Line verticalReached1 = PCXTools.PCXByEquation(basePt, outline, core.UpstairDirec);
+            Line verticalReached2 = PCXTools.PCXByEquation(basePt, outline, -core.UpstairDirec);
 
             if (verticalReached1.Length < verticalReached2.Length)
             {
                 baseAxis.Add(verticalReached1);
-                baseAxis.Add(verticalReached2);
+                subAxis.Add(verticalReached2);
             }
             else
             {
                 baseAxis.Add(verticalReached2);
-                baseAxis.Add(verticalReached1);
+                subAxis.Add(verticalReached1);
             }
 
             counterAxis = subAxis;

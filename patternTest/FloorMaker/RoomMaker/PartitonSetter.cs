@@ -216,7 +216,29 @@ namespace patternTest
             if (cornerStat == CornerState.Convex)
                 return;
 
+            int currentIndex = setterParam.OutlineLabel.Core.FindIndex
+                   (i => (i.PureLine == setterParam.OriginPost.BasePureLine));
+            if (currentIndex == setterParam.OutlineLabel.Core.Count-1)
+            {
+                SetPreEndToOrigin(setterParam);
+                return;
+            }
+
             SetNextDivOrigin(setterParam);
+            return;
+        }
+
+        private static void SetPreEndToOrigin(PartitionParam param)
+        {
+            int currentIndex = param.OutlineLabel.Core.FindIndex
+                   (i => (i.PureLine == param.OriginPost.BasePureLine));
+
+            if (currentIndex == 0)
+                return;
+
+            RoomLine baseLinePre = param.OutlineLabel.Core[currentIndex - 1];
+            param.OriginPost = new PartitionOrigin(baseLinePre.EndPt, baseLinePre);
+
             return;
         }
 
@@ -316,7 +338,7 @@ namespace patternTest
             PartitionOrigin originTest = setterParam.OriginPost;
 
             Vector3d normal = originTest.BaseLine.UnitNormal;
-            Polyline trimmed = setterParam.OutlineLabel.Trimmed;
+            Polyline trimmed = setterParam.OutlineLabel.Difference;
             double coverAllLength = new BoundingBox(new List<Point3d>(trimmed)).Diagonal.Length * 2;
             Line testLine = new Line(originTest.Point, originTest.Point + normal * coverAllLength);
 
@@ -362,7 +384,7 @@ namespace patternTest
             double perpX = (oSideB * dSideC - dSideB * oSideC) / det;
             double perpY = (dSideA * oSideC - oSideA * dSideC) / det;
 
-            return new Point3d(perpX, perpY, 0);
+            return new Point3d(perpX, perpY, oSidePt.Z);
         }
 
         private static Boolean IsOnOriginBase(Point3d ptTest, PartitionOrigin originTest)

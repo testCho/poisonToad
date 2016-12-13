@@ -25,6 +25,8 @@ namespace patternTest
             bool IsHEnoughOff = toOutlineDistH > toCoreDistH + Corridor.TwoWayWidth+ stickTolerance;
             bool IsVerticalOff = toOutlineDistV > toCoreDistV+ stickTolerance;
 
+            bool IsHLognerThanV = baseAxis[0].Length > subAxis[1].Length;
+
             if (IsHorizontalOff)
             {
                 if (IsVerticalOff)
@@ -44,10 +46,20 @@ namespace patternTest
             }
 
             else if (IsVerticalOff)
+            {
+                if (IsHLognerThanV)
+                    return new Corr_TwoWayHorizontal1();
+
                 return new Corr_OneWayVertical1();
+            }
 
             else
-                return new Corr_OneWayHorizontal1();
+            {
+                if (IsHLognerThanV)
+                    return new Corr_OneWayHorizontal1();
+
+                return new Corr_OneWayVertical1();
+            }
         }
     }
 }

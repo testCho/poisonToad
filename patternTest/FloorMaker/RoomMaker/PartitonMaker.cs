@@ -29,11 +29,9 @@ namespace patternTest
         //sub method
         private static DivMakerOutput DrawAtConcaveCorner(PartitionParam param, double targetArea)
         {
-            if (param.OriginPost.Point == param.OriginPost.BaseLine.EndPt)
-            {
-                SetPostStartToOrigin(param);
-                return DrawEachPartition(param, targetArea);
-            }
+            int currentIndex = param.OutlineLabel.Core.FindIndex
+                (i => (i.PureLine == param.OriginPost.BasePureLine));
+
 
             PartitionParam thisEndParam = new PartitionParam(param);
             thisEndParam.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
@@ -50,6 +48,19 @@ namespace patternTest
 
                 return SelectBetterPartition(outputCandidate, targetArea);
             }
+
+            //바로 위와 순서 바꿈.. 문제 되려나?
+            if (param.OriginPost.Point == param.OriginPost.BaseLine.EndPt)
+            {
+                if (currentIndex == param.OutlineLabel.Core.Count - 2)
+                    return DrawOrtho(param);
+                
+
+                SetPostStartToOrigin(param);
+                return DrawEachPartition(param, targetArea);
+            }
+
+
 
             //SetPostParallelToOrigin(param);
             SetPostStartToOrigin(param);
@@ -128,16 +139,17 @@ namespace patternTest
             int originIndex = coreSeg.FindIndex(i => i.PureLine == param.OriginPost.BasePureLine);
             int coreSegCount = coreSeg.Count();
 
-            if (originIndex == coreSegCount - 1)
-            {
-                param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
-                return;
-            }
-
+         
             double toEndLength = new Line(param.OriginPost.Point, param.OriginPost.BaseLine.EndPt).Length;
 
             if (toEndLength<Corridor.MinLengthForDoor)
             {
+                if (originIndex == coreSegCount - 1)
+                {
+                    param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+                    return;
+                }
+
                 param.OriginPost = new PartitionOrigin(coreSeg[originIndex + 1].StartPt, coreSeg[originIndex + 1]);
                 return;
             }
@@ -280,6 +292,7 @@ namespace patternTest
 
         } 
 
+        //setter랑 중복코드 있음!!
         private static void SetPostStartToOrigin(PartitionParam param)
         {
             int currentIndex = param.OutlineLabel.Core.FindIndex
@@ -294,6 +307,7 @@ namespace patternTest
             return;
         }
 
+        
         private static void SetPreEndToOrigin(PartitionParam param)
         {
             int currentIndex = param.OutlineLabel.Core.FindIndex
@@ -307,6 +321,7 @@ namespace patternTest
 
             return;
         }
+        //setter랑 중복코드 있음!!
 
         private static DivMakerOutput SelectBetterPartition(List<DivMakerOutput> candidate, double targetArea)
         {
