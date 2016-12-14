@@ -46,7 +46,7 @@ namespace patternTest
 
             Point3d anchorBase = baseAxis[0].PointAt(0);
 
-            double coreSideLength = PCXTools.ExtendFromPt(anchorBase, core.CoreLine, -baseAxis[1].UnitTangent).Length;
+            double coreSideLength = PCXTools.PCXByEquation(anchorBase, core.CoreLine, -baseAxis[1].UnitTangent).Length;
             double landingSideLength = baseLine.PointAt(0.5).DistanceTo(anchorBase);
             double subCorridorWidth = coreSideLength + landingSideLength;
             double halfHLength = baseLine.Length / 2;
@@ -76,7 +76,7 @@ namespace patternTest
             limitCandidates.Add(0);
             limitCandidates.Add(baseAxis[0].Length- Corridor.TwoWayWidth-baseHalfHSize);
 
-            double shortHAxisLength = PCXTools.ExtendFromPt(baseLine.PointAt(0.5),outline,-baseAxis[0].UnitTangent).Length;
+            double shortHAxisLength = PCXTools.PCXByEquation(baseLine.PointAt(0.5),outline,-baseAxis[0].UnitTangent).Length;
             limitCandidates.Add(Corridor.MinRoomWidth - shortHAxisLength);
    
             limitCandidates.Sort((x, y) => -x.CompareTo(y));
@@ -100,7 +100,7 @@ namespace patternTest
             Point3d anchor3 = new Point3d();
             Point3d anchorBase = baseAxis[0].PointAt(0);
 
-            double vLimit = PCXTools.ExtendFromPt(anchor2, outline, -baseAxis[1].UnitTangent).Length- subLength/2;
+            double vLimit = PCXTools.PCXByEquation(anchor2, outline, -baseAxis[1].UnitTangent).Length- subLength/2;
             anchor2 = anchor2 - baseAxis[1].UnitTangent * (vLimit * vFactor);
             return anchor3;
         }

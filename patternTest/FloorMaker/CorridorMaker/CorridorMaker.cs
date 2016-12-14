@@ -78,8 +78,8 @@ namespace patternTest
             Point3d decidingPt1 = baseLine.PointAt(0.01) - core.UpstairDirec / core.UpstairDirec.Length * 0.01;
             Point3d decidingPt2 = baseLine.PointAt(0.09) - core.UpstairDirec / core.UpstairDirec.Length * 0.01;
 
-            double candidate1 = PCXTools.ExtendFromPt(decidingPt1, core.Landing, -core.UpstairDirec).Length + 0.01;
-            double candidate2 = PCXTools.ExtendFromPt(decidingPt2, core.Landing, -core.UpstairDirec).Length + 0.01;
+            double candidate1 = PCXTools.PCXByEquation(decidingPt1, core.Landing, -core.UpstairDirec).Length + 0.01;
+            double candidate2 = PCXTools.PCXByEquation(decidingPt2, core.Landing, -core.UpstairDirec).Length + 0.01;
 
             if (candidate1 > candidate2)
                 vLimit = candidate2;

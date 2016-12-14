@@ -54,7 +54,7 @@ namespace patternTest
             Point3d anchor2 = new Point3d();
 
             Point3d anchor2Center = new Point3d();
-            double anchorLineLength = PCXTools.ExtendFromPt(mainAxis[1].PointAt(0), core.CoreLine, mainAxis[1].UnitTangent).Length;
+            double anchorLineLength = PCXTools.PCXByEquation(mainAxis[1].PointAt(0), core.CoreLine, mainAxis[1].UnitTangent).Length;
 
             if (anchorLineLength < mainAxis[1].Length)
                 anchor2Center = anchor1 + mainAxis[1].UnitTangent * (anchorLineLength - Corridor.OneWayWidth / 2);
@@ -71,7 +71,7 @@ namespace patternTest
             Point3d anchor3 = new Point3d();
 
             Point3d anchor3Center = new Point3d();
-            double anchorLineLength = (PCXTools.ExtendFromPt(anchor2, outline, mainAxis[0].UnitTangent).Length- Corridor.OneWayWidth / 2) *lengthFactor;
+            double anchorLineLength = (PCXTools.PCXByEquation(anchor2, outline, mainAxis[0].UnitTangent).Length- Corridor.OneWayWidth / 2) *lengthFactor;
             anchor3Center = anchor2 + mainAxis[0].UnitTangent * anchorLineLength;
 
             anchor3 = anchor3Center; //임시

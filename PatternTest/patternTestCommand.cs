@@ -69,6 +69,18 @@ namespace patternTest
             }
         }
 
+        public void Print(Brep lc, Color color, RhinoDoc doc)
+        {
+
+     
+                Guid temp = doc.Objects.Add(lc);
+                var obj = doc.Objects.Find(temp);
+                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
+                obj.Attributes.ObjectColor = color;
+                obj.CommitChanges();
+            
+        }
+
         public void Print(Curve[] lc, Color color, RhinoDoc doc)
         {
 
@@ -124,10 +136,18 @@ namespace patternTest
             landing = testPoly[2];
 
             List<Polyline> rooms = Debugger.DebugRoom(outline, coreLine, landing);
-            List<Polyline> corridor = Debugger.DebugCorridor(outline, coreLine, landing);
+            //List<Brep> breps = new List<Brep>();
+            //foreach (Polyline i in rooms)
+            //    breps.Add(Extrusion.Create(i.ToNurbsCurve(), -3, true).ToBrep());
 
-            Print(rooms, Color.Coral, doc);
-            Print(corridor, Color.Aquamarine, doc);
+            List<Polyline> corridor = Debugger.DebugCorridor(outline, coreLine, landing);
+            //List<Brep> corridorBreps = new List<Brep>();
+            //foreach (Polyline i in corridor)
+            //    corridorBreps.Add(Extrusion.Create(i.ToNurbsCurve(), -0.01, true).ToBrep());
+
+            Brep outlineBrep = Extrusion.Create(outline.ToNurbsCurve(), -0.01, true).ToBrep();
+            Print(rooms, Color.LightGoldenrodYellow, doc);
+            Print(corridor, Color.Turquoise, doc);
             doc.Views.Redraw();
 
             RhinoApp.WriteLine("최선을 다했습니다만...");

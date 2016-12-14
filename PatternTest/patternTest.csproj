@@ -44,7 +44,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern1D.cs" />
     <Compile Include="Tools\CCXTools.cs" />
     <Compile Include="Tools\PCXTools.cs" />
     <Compile Include="Tools\PointTools.cs" />

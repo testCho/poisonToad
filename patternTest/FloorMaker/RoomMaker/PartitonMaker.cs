@@ -60,6 +60,12 @@ namespace patternTest
                 return DrawEachPartition(param, targetArea);
             }
 
+            //이거 나중에 수정
+            if (currentIndex == param.OutlineLabel.Core.Count - 2)
+            {
+                param.OriginPost.Point = param.OriginPost.BaseLine.EndPt;
+                return DrawOrtho(param);
+            }
 
 
             //SetPostParallelToOrigin(param);
@@ -332,7 +338,7 @@ namespace patternTest
             double length1 = candidate[0].DivParams.PartitionPost.GetLength();
             double length2 = candidate[1].DivParams.PartitionPost.GetLength();
 
-            if(length1/length2 > 0.85)
+            if(length1/length2 > 0.8)
             {
                 candidate.Sort((x, y) => 
                 (Math.Abs(targetArea - PolylineTools.GetArea(x.Poly))).CompareTo(Math.Abs(targetArea - PolylineTools.GetArea(y.Poly))));
@@ -441,7 +447,7 @@ namespace patternTest
 
             double betweenEnd = new Vector3d(baseLineEnd - currentDivOrigin).Length;
 
-            if (betweenEnd < Corridor.MinLengthForDoor)
+            if (betweenEnd < Corridor.MinLengthForDoor* 0.9)
                 return true;
 
             return false;
@@ -454,7 +460,7 @@ namespace patternTest
 
             double betweenStart = new Vector3d(currentDivOrigin - baseLineStart).Length;
 
-            if (betweenStart < Corridor.MinLengthForDoor)
+            if (betweenStart < Corridor.MinLengthForDoor*0.9)
                 return true;
 
             return false;

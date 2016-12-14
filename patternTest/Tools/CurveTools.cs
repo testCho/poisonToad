@@ -44,7 +44,7 @@ namespace patternTest
 
         public static bool IsOverlap(Curve curve1, Curve curve2)
         {
-            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve1, curve2, 0, 0);
+            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve1, curve2, 0, 0.005);
             foreach (var i in polyIntersection)
             {
                 if (i.IsOverlap)

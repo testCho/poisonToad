@@ -55,7 +55,7 @@ namespace patternTest
         {
             Point3d anchor2 = new Point3d();
 
-            double coreSideLimit = PCXTools.ExtendFromPt(baseAxis[0].PointAt(0), core.CoreLine, -baseAxis[1].UnitTangent).Length;
+            double coreSideLimit = PCXTools.PCXByEquation(baseAxis[0].PointAt(0), core.CoreLine, -baseAxis[1].UnitTangent).Length;
             double scaledCorridorWidth = Corridor.OneWayWidth / 2;
             double vLimit = coreSideLimit + scaledCorridorWidth;
 
@@ -68,7 +68,7 @@ namespace patternTest
         {
             Point3d anchor3 = new Point3d();
 
-            double outlineSideLimit = PCXTools.ExtendFromPt(anchor2, outline, -baseAxis[0].UnitTangent).Length - Corridor.OneWayWidth / 2;
+            double outlineSideLimit = PCXTools.PCXByEquation(anchor2, outline, -baseAxis[0].UnitTangent).Length - Corridor.OneWayWidth / 2;
             double hLimit = baseLine.Length;
 
             if (outlineSideLimit < hLimit)
@@ -83,7 +83,7 @@ namespace patternTest
         {
             Point3d anchor4 = new Point3d();
 
-            double vLimit = PCXTools.ExtendFromPt(anchor3, outline, -baseAxis[1].UnitTangent).Length - Corridor.OneWayWidth / 2;
+            double vLimit = PCXTools.PCXByEquation(anchor3, outline, -baseAxis[1].UnitTangent).Length - Corridor.OneWayWidth / 2;
             anchor4 = anchor3 - baseAxis[1].UnitTangent *vLimit * vFactor;
 
             return anchor4;

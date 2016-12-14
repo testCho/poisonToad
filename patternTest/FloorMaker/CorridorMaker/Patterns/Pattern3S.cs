@@ -81,7 +81,7 @@ namespace patternTest
 
 
             Vector3d hAxis = mainAxis[0].UnitTangent;
-            double hLimit = PCXTools.ExtendFromPt(anchor1, outline, hAxis).Length - Corridor.TwoWayWidth / 2;
+            double hLimit = PCXTools.PCXByEquation(anchor1, outline, hAxis).Length - Corridor.TwoWayWidth / 2;
             anchor2 = anchor1 + hAxis * hLimit * hFactor;
             
             return anchor2;

@@ -18,8 +18,8 @@ namespace patternTest
             Point3d origin = param.OriginPost.Point;
             Polyline outline = param.OutlineLabel.Pure;
 
-            Line cornerLinePre = PCXTools.ExtendFromPt(origin, outline, coreSeg[preIndex].UnitNormal);
-            Line cornerLinePost = PCXTools.ExtendFromPt(origin, outline, coreSeg[originIndex].UnitNormal);
+            Line cornerLinePre = PCXTools.PCXByEquation(origin, outline, coreSeg[preIndex].UnitNormal);
+            Line cornerLinePost = PCXTools.PCXByEquation(origin, outline, coreSeg[originIndex].UnitNormal);
 
             double outlineParamPre = outline.ClosestParameter(cornerLinePre.PointAt(1));
             double outlineParamPost = outline.ClosestParameter(cornerLinePost.PointAt(1));
@@ -135,7 +135,7 @@ namespace patternTest
 
                 List<RoomLine> cornerPartitions = new List<RoomLine>();
                 cornerPartitions.Add(new RoomLine(new Line(origin, tempAnchor), LineType.Inner));
-                Line anchorToOutline = PCXTools.ExtendFromPt(tempAnchor, param.OutlineLabel.Pure, mainPerp);
+                Line anchorToOutline = PCXTools.PCXByEquation(tempAnchor, param.OutlineLabel.Pure, mainPerp);
                 cornerPartitions.Add(new RoomLine(anchorToOutline, LineType.Inner));
 
                 Partition tempPartition = new Partition(cornerPartitions,param.OriginPost);
@@ -203,21 +203,34 @@ namespace patternTest
                 Vector3d toMainVector = -mainPerp;
 
                 if (IsBetweenVector(toPreVector, toPostVector, toMainVector))
-                    canMakePerpVertex.Add(outlineVertex[i]);
-                
+                    canMakePerpVertex.Add(outlineVertex[i]);                
             }
 
             //SeivePerpVertex
+            List<Point3d> finalVertex = new List<Point3d>();
 
+            
+            foreach (Point3d i in outlineVertex)
+            {
+                Line toBaseLine = PCXTools.PCXByEquationStrict(i, CurveTools.ToPolyline(mainLine.ToNurbsCurve()), -mainPerp);           
+                Line toOutline = PCXTools.PCXByEquationStrict(toBaseLine.PointAt(1), param.OutlineLabel.Pure, mainPerp);
+
+                if (toOutline.PointAt(1).DistanceTo(i) < 0.005)
+                    finalVertex.Add(i);
+            }
 
 
             //DrawAtEachVertex
             List<DivMakerOutput> outputCandidate = new List<DivMakerOutput>();
             
-            foreach (Point3d i in canMakePerpVertex)
-            {
-                Line vertexToMainLine = new Line(i, i - mainPerp * 1);
-                Point3d tempAnchor = CCXTools.GetCrossPt(mainLine, vertexToMainLine);
+            foreach (Point3d i in finalVertex)
+            {                          
+                Line toBaseLine = PCXTools.PCXByEquationStrict(i, CurveTools.ToPolyline(mainLine.ToNurbsCurve()), -mainPerp);
+                Point3d tempAnchor = toBaseLine.PointAt(1);
+                Line toOutline = PCXTools.PCXByEquationStrict(tempAnchor, param.OutlineLabel.Pure, mainPerp);
+
+                if (toOutline.PointAt(1).DistanceTo(i) > 0.005)
+                    continue;
 
                 List<RoomLine> tempPartition = new List<RoomLine>();
                 tempPartition.Add(new RoomLine(new Line(origin, tempAnchor), LineType.Inner));
@@ -225,7 +238,9 @@ namespace patternTest
 
                 PartitionParam tempParam = new PartitionParam(param);
                 tempParam.PartitionPost = new Partition(tempPartition, param.OriginPost);
-                Polyline tempPoly = RoomOutlineDrawer.GetRoomOutline(param);
+                Polyline tempPoly = RoomOutlineDrawer.GetRoomOutline(tempParam);
+
+               
 
                 outputCandidate.Add(new DivMakerOutput(tempPoly, tempParam));
             }
@@ -246,14 +261,9 @@ namespace patternTest
         /// </summary>
         private static Boolean IsBetweenVector(Vector3d preVector, Vector3d postVector, Vector3d testVector)
         {
-            double crossTolerance = 0.005;
-
             Vector3d toPreCross = Vector3d.CrossProduct(testVector, preVector);
             Vector3d toPostCross = Vector3d.CrossProduct(testVector, postVector);
             Vector3d preToPostCross = Vector3d.CrossProduct(preVector, postVector);
-
-            if (Math.Abs(toPreCross.Length) < crossTolerance || Math.Abs(toPostCross.Length) < crossTolerance)
-                return false;
 
             bool IsToPostNegZAlign = Vector3d.Multiply(toPostCross, -Vector3d.ZAxis) > 0;
             bool IsToPreZAlign = Vector3d.Multiply(toPreCross, Vector3d.ZAxis) > 0;
@@ -275,6 +285,7 @@ namespace patternTest
                     return true;
                 return false;
             }
+
 
             return false;
         }

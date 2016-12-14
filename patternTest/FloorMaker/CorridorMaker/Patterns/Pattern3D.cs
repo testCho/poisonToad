@@ -83,7 +83,7 @@ namespace patternTest
             for(int i=0; i<anchor1.Count;i++)
             {
                 Vector3d tempAxis = mainAxis[0].UnitTangent*Math.Pow(-1,i);
-                double hLimit = PCXTools.ExtendFromPt(anchor1[i], outline, tempAxis).Length- Corridor.TwoWayWidth/2;
+                double hLimit = PCXTools.PCXByEquation(anchor1[i], outline, tempAxis).Length- Corridor.TwoWayWidth/2;
                 anchor2.Add(anchor1[i] +tempAxis*hLimit*hFactors[i]);
             }
 

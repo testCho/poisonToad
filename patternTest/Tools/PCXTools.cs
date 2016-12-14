@@ -58,6 +58,33 @@ namespace patternTest
                 return new Line();
         }
 
+        public static Line PCXByEquationStrict(Point3d basePt, Polyline boundary, Vector3d direction)
+        {
+            double onCurveTolerance = 0.005;
+
+            double coverAllLength = new BoundingBox(boundary).Diagonal.Length * 2;
+            Line testLine = new Line(basePt, basePt + direction / direction.Length * coverAllLength);
+            List<Line> boundarySeg = boundary.GetSegments().ToList();
+            List<Point3d> crossPtCandidate = new List<Point3d>();
+
+            foreach (Line i in boundarySeg)
+            {
+                Point3d tempCrossPt = CCXTools.GetCrossPt(testLine, i);
+                if (IsPtOnLine(tempCrossPt, testLine, onCurveTolerance) && IsPtOnLine(tempCrossPt, i, onCurveTolerance))
+                {
+                    if (tempCrossPt != basePt)
+                        crossPtCandidate.Add(tempCrossPt);
+                }
+            }
+
+            crossPtCandidate.Sort((a, b) => (basePt.DistanceTo(a).CompareTo(basePt.DistanceTo(b))));
+
+            if (crossPtCandidate.Count != 0)
+                return new Line(basePt, crossPtCandidate[0]);
+            else
+                return new Line();
+        }
+
         public static Boolean IsPtOnLine(Point3d testPt, Line testLine, double tolerance)
         {
             if (testPt == Point3d.Unset)
@@ -92,5 +119,7 @@ namespace patternTest
 
             return false;
         }
+
+    
     }
 }

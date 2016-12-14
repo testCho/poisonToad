@@ -17,9 +17,9 @@ namespace patternTest
             Point3d basePt = baseAxis[0].PointAt(0);
 
             double toOutlineDistH = subAxis[0].Length;
-            double toCoreDistH = PCXTools.ExtendFromPt(basePt, core.CoreLine, subAxis[0].UnitTangent).Length;
+            double toCoreDistH = PCXTools.PCXByEquation(basePt, core.CoreLine, subAxis[0].UnitTangent).Length;
             double toOutlineDistV = baseAxis[1].Length;
-            double toCoreDistV = PCXTools.ExtendFromPt(basePt, core.CoreLine, baseAxis[1].UnitTangent).Length;
+            double toCoreDistV = PCXTools.PCXByEquation(basePt, core.CoreLine, baseAxis[1].UnitTangent).Length;
 
             bool IsHorizontalOff = toOutlineDistH > toCoreDistH+ stickTolerance;
             bool IsHEnoughOff = toOutlineDistH > toCoreDistH + Corridor.TwoWayWidth+ stickTolerance;
