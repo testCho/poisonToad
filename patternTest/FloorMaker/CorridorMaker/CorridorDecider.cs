@@ -20,10 +20,12 @@ namespace patternTest
             double toCoreDistH = PCXTools.PCXByEquation(basePt, core.CoreLine, subAxis[0].UnitTangent).Length;
             double toOutlineDistV = baseAxis[1].Length;
             double toCoreDistV = PCXTools.PCXByEquation(basePt, core.CoreLine, baseAxis[1].UnitTangent).Length;
+            double toLandingDistV = PCXTools.PCXByEquation(basePt, core.Landing, baseAxis[1].UnitTangent).Length;
 
             bool IsHorizontalOff = toOutlineDistH > toCoreDistH+ stickTolerance;
             bool IsHEnoughOff = toOutlineDistH > toCoreDistH + Corridor.TwoWayWidth+ stickTolerance;
             bool IsVerticalOff = toOutlineDistV > toCoreDistV+ stickTolerance;
+            bool IsVEnoughOff = toOutlineDistV > Corridor.MinRoomWidth+ toLandingDistV+ stickTolerance;
 
             bool IsHLognerThanV = baseAxis[0].Length > subAxis[1].Length;
 
@@ -31,13 +33,14 @@ namespace patternTest
             {
                 if (IsVerticalOff)
                 {
-                    //return null;
+                    if (!IsVEnoughOff)
+                        return null;
+
                     if (IsHEnoughOff)
                         return new Corr_TwoWayHorizontal2();
 
                     return new Corr_TwoWayHorizontal1();
                 }
-
 
                 if (IsHEnoughOff)
                     return new Corr_TwoWayHorizontal2();
@@ -48,7 +51,12 @@ namespace patternTest
             else if (IsVerticalOff)
             {
                 if (IsHLognerThanV)
+                {
+                    if (!IsVEnoughOff)
+                        return null;
+
                     return new Corr_TwoWayHorizontal1();
+                }
 
                 return new Corr_OneWayVertical1();
             }

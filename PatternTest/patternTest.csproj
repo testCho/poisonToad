@@ -44,6 +44,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitionMakerLast.cs" />
     <Compile Include="Tools\CCXTools.cs" />
     <Compile Include="Tools\PCXTools.cs" />
     <Compile Include="Tools\PointTools.cs" />
@@ -56,10 +57,10 @@
     <Compile Include="FloorMaker\CorridorMaker\CorridorDecider.cs" />
     <Compile Include="DataStructure\CorridorDS.cs" />
     <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern3S.cs" />
-    <Compile Include="FloorMaker\RoomMaker\PartitionMakerCorner.cs" />
+    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitionMakerCorner.cs" />
     <Compile Include="FloorMaker\RoomMaker\RoomOutlineDrawer.cs" />
-    <Compile Include="FloorMaker\RoomMaker\PartitonMaker.cs" />
-    <Compile Include="FloorMaker\RoomMaker\PartitonSetter.cs" />
+    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitonMaker.cs" />
+    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitonSetter.cs" />
     <Compile Include="Issue.cs" />
     <Compile Include="FloorMaker\CorridorMaker\CorridorMaker.cs" />
     <Compile Include="DataStructure\RoomDS.cs" />

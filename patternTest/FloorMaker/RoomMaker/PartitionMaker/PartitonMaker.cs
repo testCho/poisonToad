@@ -338,7 +338,7 @@ namespace patternTest
             double length1 = candidate[0].DivParams.PartitionPost.GetLength();
             double length2 = candidate[1].DivParams.PartitionPost.GetLength();
 
-            if(length1/length2 > 0.8)
+            if(length1/length2 > 0.85)
             {
                 candidate.Sort((x, y) => 
                 (Math.Abs(targetArea - PolylineTools.GetArea(x.Poly))).CompareTo(Math.Abs(targetArea - PolylineTools.GetArea(y.Poly))));

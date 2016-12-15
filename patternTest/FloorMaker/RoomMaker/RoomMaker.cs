@@ -34,6 +34,7 @@ namespace patternTest
             //draw initial
             Partition dividerInitial = SetInitialDivider(outlineLabel);
             PartitionParam paramInitial = new PartitionParam(dividerInitial, dividerInitial.Origin, outlineLabel);
+            PartitionParam paramPre = new PartitionParam(paramInitial);
 
 
             //draw middle
@@ -41,28 +42,18 @@ namespace patternTest
             {
                 if(i == roomAreas.Count-1)
                 {
-                    PartitionParam lastParam = new PartitionParam(paramInitial);
-                    lastParam.OriginPost.BaseLine = paramInitial.OutlineLabel.Core.Last();
-                    lastParam.OriginPost.Point = paramInitial.OutlineLabel.Core.Last().EndPt;
-                     
-                    if (IsCrossed(lastParam))
-                    {
-                        lastParam.OriginPost.BaseLine = paramInitial.OutlineLabel.Core[paramInitial.OutlineLabel.Core.Count - 2];
-                        lastParam.OriginPost.Point = lastParam.OriginPost.BaseLine.EndPt;
-                    }
-
-                    DivMakerOutput lastPartition = PartitionMaker.DrawOrtho(lastParam);
+                    DivMakerOutput lastPartition = PartitionMakerLast.Draw(paramPre, paramInitial);
                     partitionList.Add(lastPartition.Poly);
-                    break;
+                    return partitionList;                  
                 }
 
-                DivMakerOutput eachPartition = PartitionMaker.DrawEachPartition(paramInitial, roomAreas[i]);
+                DivMakerOutput eachPartition = PartitionMaker.DrawEachPartition(paramPre, roomAreas[i]);
                 partitionList.Add(eachPartition.Poly);
 
                 remainedArea -= PolylineTools.GetArea(eachPartition.Poly);
 
                 eachPartition.DivParams.PostToPre();
-                paramInitial = eachPartition.DivParams;
+                paramPre = eachPartition.DivParams;
 
                 if (remainedArea <= remainTolerance)
                     break;   
@@ -71,6 +62,7 @@ namespace patternTest
             return partitionList;
         }
 
+      
         //method
         private static Partition SetInitialDivider(LabeledOutline outlineLabel)
         {
@@ -98,30 +90,6 @@ namespace patternTest
             Partition dividerInitial = new Partition(lineInitialLabeled, originInitial);
 
             return dividerInitial;
-        }
-
-        private static Boolean IsCrossed(PartitionParam setterParam)
-        {
-            Partition dividerTest = setterParam.PartitionPre;
-            PartitionOrigin originTest = setterParam.OriginPost;
-
-            Vector3d normal = originTest.BaseLine.UnitNormal;
-            Polyline trimmed = setterParam.OutlineLabel.Difference;
-            double coverAllLength = new BoundingBox(new List<Point3d>(trimmed)).Diagonal.Length * 2;
-            Line testLine = new Line(originTest.Point, originTest.Point + normal * coverAllLength);
-
-            foreach (RoomLine i in dividerTest.Lines)
-            {
-                if (i.UnitTangent == normal)
-                    continue;
-
-                Point3d crossPt = CCXTools.GetCrossPt(testLine, i.PureLine);
-
-                if (PCXTools.IsPtOnLine(crossPt, i.PureLine, 0.005) && PCXTools.IsPtOnLine(crossPt, testLine, 0.005))
-                    return true;
-            }
-
-            return false;
         }
 
 

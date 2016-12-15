@@ -147,6 +147,8 @@ namespace patternTest
 
             Brep outlineBrep = Extrusion.Create(outline.ToNurbsCurve(), -0.01, true).ToBrep();
             Print(rooms, Color.LightGoldenrodYellow, doc);
+
+            if(corridor!=null)
             Print(corridor, Color.Turquoise, doc);
             doc.Views.Redraw();
 
