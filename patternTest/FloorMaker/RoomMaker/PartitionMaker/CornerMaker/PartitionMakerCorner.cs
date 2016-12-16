@@ -95,7 +95,7 @@ namespace patternTest
             int iterNum = 10;
             int breaker = 0;
 
-            Line mainLine = GetMainLine(param, outlineVertex);     
+            Line mainLine = GetMainLine(param, outlineVertex);
             Vector3d mainAlign = mainLine.UnitTangent;
             Vector3d mainPerp = VectorTools.RotateVectorXY(mainAlign, Math.PI / 2);
             Point3d origin = param.OriginPost.Point;
@@ -103,19 +103,19 @@ namespace patternTest
             double dotProduct = Vector3d.Multiply(mainAlign, param.OriginPost.BaseLine.UnitNormal);
             double dotTolerance = 0.005;
 
-            bool isMainDirecPreDiv = false; 
+            bool isMainDirecPreDiv = false;
 
             if (Math.Abs(dotProduct) < dotTolerance)
             {
                 int originIndex = param.OutlineLabel.Core.FindIndex
                     (i => i.PureLine == param.OriginPost.BasePureLine);
 
-                param.OriginPost = new PartitionOrigin(origin, param.OutlineLabel.Core[originIndex-1]);
+                param.OriginPost = new PartitionOrigin(origin, param.OutlineLabel.Core[originIndex - 1]);
                 mainPerp = VectorTools.RotateVectorXY(mainAlign, -Math.PI / 2);
                 isMainDirecPreDiv = true;
             }
 
-            
+
             double lowerBound = 0;
             double upperBound = mainLine.Length;
             Polyline polyOutput = new Polyline();
@@ -136,7 +136,7 @@ namespace patternTest
                 Line anchorToOutline = PCXTools.PCXByEquation(tempAnchor, param.OutlineLabel.Pure, mainPerp);
                 cornerPartitions.Add(new RoomLine(anchorToOutline, LineType.Inner));
 
-                Partition tempPartition = new Partition(cornerPartitions,param.OriginPost);
+                Partition tempPartition = new Partition(cornerPartitions, param.OriginPost);
                 param.PartitionPost = tempPartition;
                 Polyline tempPoly = RoomOutlineDrawer.GetRoomOutline(param);
                 polyOutput = tempPoly;
@@ -171,7 +171,7 @@ namespace patternTest
             if (dotProduct < dotTolerance)
                 return DrawAtNoFoldOutline(param, targetArea, outlineVertex);
 
-            return DrawAtMultiFoldOutline(param, targetArea, outlineVertex);                                    
+            return DrawAtMultiFoldOutline(param, targetArea, outlineVertex);
         }
 
         private static DivMakerOutput DrawAtMultiFoldOutline(PartitionParam param, double targetArea, List<Point3d> outlineVertex)
@@ -182,7 +182,7 @@ namespace patternTest
             Vector3d mainAlign = mainLine.UnitTangent;
             Vector3d mainPerp = VectorTools.RotateVectorXY(mainAlign, Math.PI / 2);
             Point3d origin = param.OriginPost.Point;
-            bool isMainAlignSameAsPostNormal = mainAlign.IsParallelTo(param.OriginPost.BaseLine.UnitNormal, 0.005)==1;
+            bool isMainAlignSameAsPostNormal = mainAlign.IsParallelTo(param.OriginPost.BaseLine.UnitNormal, 0.005) == 1;
 
             if (!isMainAlignSameAsPostNormal)
             {
@@ -202,16 +202,16 @@ namespace patternTest
                 Vector3d toMainVector = -mainPerp;
 
                 if (IsBetweenVector(toPreVector, toPostVector, toMainVector))
-                    canMakePerpVertex.Add(outlineVertex[i]);                
+                    canMakePerpVertex.Add(outlineVertex[i]);
             }
 
             //SeivePerpVertex
             List<Point3d> finalVertex = new List<Point3d>();
 
-            
+
             foreach (Point3d i in outlineVertex)
             {
-                Line toBaseLine = PCXTools.PCXByEquationStrict(i, CurveTools.ToPolyline(mainLine.ToNurbsCurve()), -mainPerp);           
+                Line toBaseLine = PCXTools.PCXByEquationStrict(i, CurveTools.ToPolyline(mainLine.ToNurbsCurve()), -mainPerp);
                 Line toOutline = PCXTools.PCXByEquationStrict(toBaseLine.PointAt(1), param.OutlineLabel.Pure, mainPerp);
 
                 if (toOutline.PointAt(1).DistanceTo(i) < 0.5)
@@ -221,9 +221,9 @@ namespace patternTest
 
             //DrawAtEachVertex
             List<DivMakerOutput> outputCandidate = new List<DivMakerOutput>();
-            
+
             foreach (Point3d i in finalVertex)
-            {                          
+            {
                 Line toBaseLine = PCXTools.PCXByEquationStrict(i, CurveTools.ToPolyline(mainLine.ToNurbsCurve()), -mainPerp);
                 Point3d tempAnchor = toBaseLine.PointAt(1);
                 Line toOutline = PCXTools.PCXByEquationStrict(tempAnchor, param.OutlineLabel.Pure, mainPerp);
@@ -247,9 +247,11 @@ namespace patternTest
 
             //TestCandidate
             //나중에 수정.. 지금은 면적일치정도로만..
-            outputCandidate.Sort((x, y) => CornerOutputComparer(x, y, targetArea));
-            
-            return outputCandidate[0];
+            Plane cornerPlane = new Plane(origin, mainAlign, mainPerp);
+            CornerComparer comparer = new CornerComparer();
+            List<DivMakerOutput> seived = comparer.Seive(outputCandidate, targetArea, cornerPlane);
+
+            return seived[0];
         }
 
 
@@ -297,71 +299,6 @@ namespace patternTest
             else
                 return cornerLinePost;
         }
-
-        private static int CornerOutputComparer(DivMakerOutput a, DivMakerOutput b, double targetArea)
-        {
-            //tolerance
-            double nearDecidingRate = 1.2;
-
-            //binPackSet
-            double aLength = a.DivParams.PartitionPost.GetLength();
-            double bLength = b.DivParams.PartitionPost.GetLength();
-
-            double aArea = PolylineTools.GetArea(a.Poly);
-            double bArea = PolylineTools.GetArea(b.Poly);
-
-            double aProperity = Math.Abs(aArea - targetArea);
-            double bProperity = Math.Abs(bArea - targetArea);
-
-            //decider
-            bool IsAMoreProper = aProperity / bProperity < 0.7;
-            bool IsAShorter = aLength / bLength < 0.8;
-
-            //
-
-            if (aArea <= targetArea)
-            {
-                if (bArea <= targetArea)
-                {
-                    if (IsAMoreProper)
-                    {
-                        if (IsAShorter)
-                            return -1;
-                        return 1;
-                    }
-                   
-                }
-
-                if (aArea * nearDecidingRate >= targetArea)
-                {
-                    if (IsAShorter)
-                        return -1;
-                    return 1;
-                } 
-
-                return 1;
-            }
-
-            if (bArea <= targetArea)
-            {
-                if (bArea * nearDecidingRate >= targetArea)
-                {
-                    if (IsAShorter)
-                        return -1;
-                    return 1;
-                }
-                return -1;
-            }
-
-            if (IsAMoreProper)
-            {
-                if (IsAShorter)
-                    return -1;
-            }
-            return 1;
-        }
-        
-
 
     }
 }

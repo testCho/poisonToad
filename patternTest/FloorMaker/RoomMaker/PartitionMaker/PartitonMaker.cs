@@ -54,7 +54,7 @@ namespace patternTest
             {
                 if (currentIndex == param.OutlineLabel.Core.Count - 2)
                     return DrawOrtho(param);
-                
+
 
                 SetPostStartToOrigin(param);
                 return DrawEachPartition(param, targetArea);
@@ -86,7 +86,7 @@ namespace patternTest
 
                 return DrawAtStraight(param, targetArea);
             }
-            
+
 
             if (IsLastSegment(param))
                 return thisEndOutput;
@@ -95,7 +95,7 @@ namespace patternTest
         }
 
         private static DivMakerOutput DrawAtStraight(PartitionParam param, double targetArea)
-        { 
+        {
 
             DivMakerOutput binaryOutput = DrawByBinarySearch(param, targetArea);
 
@@ -145,10 +145,10 @@ namespace patternTest
             int originIndex = coreSeg.FindIndex(i => i.PureLine == param.OriginPost.BasePureLine);
             int coreSegCount = coreSeg.Count();
 
-         
+
             double toEndLength = new Line(param.OriginPost.Point, param.OriginPost.BaseLine.EndPt).Length;
 
-            if (toEndLength<Corridor.MinLengthForDoor)
+            if (toEndLength < Corridor.MinLengthForDoor)
             {
                 if (originIndex == coreSegCount - 1)
                 {
@@ -173,24 +173,24 @@ namespace patternTest
             if (originIndex == coreSegCount - 1)
                 return;
 
-            for(int i = originIndex+1; i<coreSegCount; i++)
+            for (int i = originIndex + 1; i < coreSegCount; i++)
             {
-                if(coreSeg[i].UnitTangent == param.OriginPost.BaseLine.UnitTangent)
-                { 
+                if (coreSeg[i].UnitTangent == param.OriginPost.BaseLine.UnitTangent)
+                {
                     param.OriginPost = new PartitionOrigin(coreSeg[i].StartPt, coreSeg[i]);
                     return;
                 }
-            } 
+            }
         }
 
         public static DivMakerOutput DrawOrtho(PartitionParam param)
         {
             Line orthoLine = PCXTools.PCXByEquation(param.OriginPost.Point, param.OutlineLabel.Pure, param.OriginPost.BaseLine.UnitNormal);
-            List<RoomLine> orthoList = new List<RoomLine>{ new RoomLine(orthoLine, LineType.Inner)};
+            List<RoomLine> orthoList = new List<RoomLine> { new RoomLine(orthoLine, LineType.Inner) };
 
             Partition dividerCurrent = new Partition(orthoList, param.OriginPost);
 
-            PartitionParam paramNext = new PartitionParam(param.PartitionPre, dividerCurrent, dividerCurrent.Origin, param.OutlineLabel); 
+            PartitionParam paramNext = new PartitionParam(param.PartitionPre, dividerCurrent, dividerCurrent.Origin, param.OutlineLabel);
             Polyline outline = RoomOutlineDrawer.GetRoomOutline(paramNext);
 
             return new DivMakerOutput(outline, paramNext);
@@ -206,7 +206,7 @@ namespace patternTest
 
 
             Vector3d searchVector = new Vector3d(ptEnd - ptStart);
-            
+
 
             double searchRange = searchVector.Length;
             double upperBound = searchRange;
@@ -217,13 +217,13 @@ namespace patternTest
 
             int loopLimiter = 0;
 
-            while (lowerBound<upperBound)
+            while (lowerBound < upperBound)
             {
                 if (loopLimiter > iterNum)
                     break;
 
                 double tempStatus = (upperBound - lowerBound) / 2 + lowerBound;
-                Point3d tempOriginPt = ptStart + searchVector/searchRange * tempStatus;
+                Point3d tempOriginPt = ptStart + searchVector / searchRange * tempStatus;
                 param.OriginPost.Point = tempOriginPt;
 
                 DivMakerOutput tempOutput = DrawOrtho(param);
@@ -260,7 +260,7 @@ namespace patternTest
                 return DrawOrtho(param);
             }
 
-            PartitionSetter.CornerState cornerStat = 
+            PartitionSetter.CornerState cornerStat =
                 PartitionSetter.GetCCWCornerState(coreSeg[indexCurrent].UnitTangent, coreSeg[indexCurrent + 1].UnitTangent);
 
             if (cornerStat == PartitionSetter.CornerState.Concave)
@@ -280,11 +280,11 @@ namespace patternTest
             int indexCurrent = param.OutlineLabel.Core.FindIndex
                 (i => i.PureLine == param.OriginPost.BasePureLine);
 
-            if (indexCurrent <2) //이 경우는 거의 없을듯..
+            if (indexCurrent < 2) //이 경우는 거의 없을듯..
                 return DrawOrtho(param);
 
             PartitionSetter.CornerState cornerStat =
-                PartitionSetter.GetCCWCornerState(coreSeg[indexCurrent-1].UnitTangent, coreSeg[indexCurrent - 1].UnitTangent);
+                PartitionSetter.GetCCWCornerState(coreSeg[indexCurrent - 1].UnitTangent, coreSeg[indexCurrent - 1].UnitTangent);
 
             if (cornerStat == PartitionSetter.CornerState.Concave)
             {
@@ -296,7 +296,7 @@ namespace patternTest
             param.OriginPost.Point = param.OriginPost.BaseLine.StartPt;
             return DrawOrtho(param);
 
-        } 
+        }
 
         //setter랑 중복코드 있음!!
         private static void SetPostStartToOrigin(PartitionParam param)
@@ -313,7 +313,7 @@ namespace patternTest
             return;
         }
 
-        
+
         private static void SetPreEndToOrigin(PartitionParam param)
         {
             int currentIndex = param.OutlineLabel.Core.FindIndex
@@ -332,7 +332,15 @@ namespace patternTest
         private static DivMakerOutput SelectBetterPartition(List<DivMakerOutput> candidate, double targetArea)
         {
             //체 몇개 더 추가..
-            candidate.Sort((x, y) => CornerOutputComparer(x, y, targetArea)); 
+            candidate.Sort((x, y) => AreaFitnessComparer(x, y, targetArea));
+
+            //debug
+            foreach (DivMakerOutput i in candidate)
+            {
+                Rhino.RhinoDoc.ActiveDoc.Objects.Add(i.Poly.ToNurbsCurve());
+                Rhino.RhinoDoc.ActiveDoc.Views.Redraw();
+            }
+            //
 
             return candidate[0];
         }
@@ -353,7 +361,7 @@ namespace patternTest
                 if (dotDecider > 0)
                     return true;
             }
-                
+
 
             return false;
         }
@@ -366,9 +374,9 @@ namespace patternTest
             RoomLine cornerLinePre = new RoomLine();
             RoomLine cornerLinePost = new RoomLine();
 
-            if(param.OriginPost.Point == param.OriginPost.BaseLine.EndPt)
+            if (param.OriginPost.Point == param.OriginPost.BaseLine.EndPt)
             {
-                if (originCurrentIndex == param.OutlineLabel.Core.Count-1)
+                if (originCurrentIndex == param.OutlineLabel.Core.Count - 1)
                     return false;
 
                 cornerLinePre = param.OutlineLabel.Core[originCurrentIndex];
@@ -380,7 +388,7 @@ namespace patternTest
                 if (originCurrentIndex == 0)
                     return false;
 
-                cornerLinePre = param.OutlineLabel.Core[originCurrentIndex-1];
+                cornerLinePre = param.OutlineLabel.Core[originCurrentIndex - 1];
                 cornerLinePost = param.OutlineLabel.Core[originCurrentIndex];
             }
 
@@ -388,7 +396,7 @@ namespace patternTest
 
             if (cornerStat == PartitionSetter.CornerState.Concave)
                 return true;
-            
+
             return false;
         }
 
@@ -406,7 +414,7 @@ namespace patternTest
 
             cornerLinePre = param.OutlineLabel.Core[originCurrentIndex];
             cornerLinePost = param.OutlineLabel.Core[originCurrentIndex + 1];
-            
+
 
 
             PartitionSetter.CornerState cornerStat = PartitionSetter.GetCCWCornerState(cornerLinePre.UnitTangent, cornerLinePost.UnitTangent);
@@ -422,7 +430,7 @@ namespace patternTest
             int originIndex = param.OutlineLabel.Core.FindIndex
                 (i => i.PureLine == param.OriginPost.BaseLine.PureLine);
 
-            int lastIndex = param.OutlineLabel.Core.Count-1;
+            int lastIndex = param.OutlineLabel.Core.Count - 1;
             if (originIndex == lastIndex)
                 return true;
 
@@ -437,7 +445,7 @@ namespace patternTest
 
             double betweenEnd = new Vector3d(baseLineEnd - currentDivOrigin).Length;
 
-            if (betweenEnd < Corridor.MinLengthForDoor* 0.9)
+            if (betweenEnd < Corridor.MinLengthForDoor * 0.9)
                 return true;
 
             return false;
@@ -450,7 +458,7 @@ namespace patternTest
 
             double betweenStart = new Vector3d(currentDivOrigin - baseLineStart).Length;
 
-            if (betweenStart < Corridor.MinLengthForDoor*0.9)
+            if (betweenStart < Corridor.MinLengthForDoor * 0.9)
                 return true;
 
             return false;
@@ -466,72 +474,58 @@ namespace patternTest
             return false;
         }
 
-        //중복 코드!!
-        private static int CornerOutputComparer(DivMakerOutput a, DivMakerOutput b, double targetArea)
+        private static int AreaFitnessComparer(DivMakerOutput outputA, DivMakerOutput outputB, double targetArea)
         {
-            //tolerance
-            double nearDecidingRate = 1.2;
+            if (outputA == null)
+                return 1;
 
-            //binPackSet
-            double aLength = a.DivParams.PartitionPost.GetLength();
-            double bLength = b.DivParams.PartitionPost.GetLength();
+            //setting
+            double aArea = PolylineTools.GetArea(outputA.Poly);
+            double bArea = PolylineTools.GetArea(outputB.Poly);
 
-            double aArea = PolylineTools.GetArea(a.Poly);
-            double bArea = PolylineTools.GetArea(b.Poly);
+            double aLength = outputA.DivParams.PartitionPost.GetLength();
+            double bLength = outputB.DivParams.PartitionPost.GetLength();
 
-            double aProperity = Math.Abs(aArea - targetArea);
-            double bProperity = Math.Abs(bArea - targetArea);
+            double aCost = ComputeCost(aArea, targetArea);
+            double bCost = ComputeCost(bArea, targetArea);
 
             //decider
-            bool IsAMoreProper = aProperity / bProperity < 0.9;
-            bool IsAShorter = aLength / bLength < 0.5;
+            bool isACostLarger = aCost > bCost;
 
-            //
+            //compare
 
-            if (aArea <= targetArea)
+            if (isACostLarger)
             {
-                if (bArea <= targetArea)
+                if (bCost / aCost > 0.80)
                 {
-                    if (IsAMoreProper)
+                    if (aLength < bLength )
                         return -1;
-
-                    if (IsAShorter)
-                        return -1;
-                    return 1;
-                }
-
-                if (aArea * nearDecidingRate >= targetArea)
-                {
-                    if (IsAShorter)
-                        return -1;
-                    return 1;
                 }
 
                 return 1;
             }
 
-            if (bArea <= targetArea)
+            else
             {
-                if (bArea * nearDecidingRate >= targetArea)
+                if (aCost / bCost > 0.80)
                 {
-                    if (IsAShorter)
-                        return -1;
-                    return 1;
+                    if (bLength <aLength)
+                        return 1;
                 }
+
                 return -1;
             }
 
-            if (IsAMoreProper)
-            {
-                if (IsAShorter)
-                    return -1;
-                return 1;
-            }
-            return 1;
         }
 
-    }
+        private static double ComputeCost(double candidateArea, double targetArea)
+        {
+            bool isAreaEnough = candidateArea >= targetArea;
 
-    //inner dateClass
-   
+            if (isAreaEnough)
+                return Math.Abs(candidateArea - targetArea);
+
+            return Math.Abs(candidateArea - targetArea/1.2);
+        }
+    }
 }
