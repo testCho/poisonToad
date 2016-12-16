@@ -332,17 +332,7 @@ namespace patternTest
         private static DivMakerOutput SelectBetterPartition(List<DivMakerOutput> candidate, double targetArea)
         {
             //체 몇개 더 추가..
-            candidate.Sort((x, y) => 
-            (x.DivParams.PartitionPost.GetLength().CompareTo(y.DivParams.PartitionPost.GetLength())));
-
-            double length1 = candidate[0].DivParams.PartitionPost.GetLength();
-            double length2 = candidate[1].DivParams.PartitionPost.GetLength();
-
-            if(length1/length2 > 0.85)
-            {
-                candidate.Sort((x, y) => 
-                (Math.Abs(targetArea - PolylineTools.GetArea(x.Poly))).CompareTo(Math.Abs(targetArea - PolylineTools.GetArea(y.Poly))));
-            }
+            candidate.Sort((x, y) => CornerOutputComparer(x, y, targetArea)); 
 
             return candidate[0];
         }
@@ -476,7 +466,70 @@ namespace patternTest
             return false;
         }
 
-        
+        //중복 코드!!
+        private static int CornerOutputComparer(DivMakerOutput a, DivMakerOutput b, double targetArea)
+        {
+            //tolerance
+            double nearDecidingRate = 1.2;
+
+            //binPackSet
+            double aLength = a.DivParams.PartitionPost.GetLength();
+            double bLength = b.DivParams.PartitionPost.GetLength();
+
+            double aArea = PolylineTools.GetArea(a.Poly);
+            double bArea = PolylineTools.GetArea(b.Poly);
+
+            double aProperity = Math.Abs(aArea - targetArea);
+            double bProperity = Math.Abs(bArea - targetArea);
+
+            //decider
+            bool IsAMoreProper = aProperity / bProperity < 0.9;
+            bool IsAShorter = aLength / bLength < 0.5;
+
+            //
+
+            if (aArea <= targetArea)
+            {
+                if (bArea <= targetArea)
+                {
+                    if (IsAMoreProper)
+                        return -1;
+
+                    if (IsAShorter)
+                        return -1;
+                    return 1;
+                }
+
+                if (aArea * nearDecidingRate >= targetArea)
+                {
+                    if (IsAShorter)
+                        return -1;
+                    return 1;
+                }
+
+                return 1;
+            }
+
+            if (bArea <= targetArea)
+            {
+                if (bArea * nearDecidingRate >= targetArea)
+                {
+                    if (IsAShorter)
+                        return -1;
+                    return 1;
+                }
+                return -1;
+            }
+
+            if (IsAMoreProper)
+            {
+                if (IsAShorter)
+                    return -1;
+                return 1;
+            }
+            return 1;
+        }
+
     }
 
     //inner dateClass

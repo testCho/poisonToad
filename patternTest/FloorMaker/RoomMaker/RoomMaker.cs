@@ -85,7 +85,7 @@ namespace patternTest
         {
             PartitionOrigin originInitial = new PartitionOrigin(firstRoomLine.PureLine.PointAt(0), firstRoomLine);
 
-            Line lineInitial = PCXTools.PCXByEquation(originInitial.Point, outlinePure, originInitial.BaseLine.UnitNormal);
+            Line lineInitial = PCXTools.PCXByEquationStrict(originInitial.Point, outlinePure, originInitial.BaseLine.UnitNormal);
             List<RoomLine> lineInitialLabeled = new List<RoomLine> { new RoomLine(lineInitial, LineType.Inner) };
             Partition dividerInitial = new Partition(lineInitialLabeled, originInitial);
 

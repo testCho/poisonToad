@@ -11,7 +11,7 @@ namespace patternTest
     {
         public ICorridorPattern GetCorridorPattern(Polyline outline, Core core, List<Line> baseAxis, List<Line> subAxis)
         {
-            double stickTolerance = 0.005;
+            double stickTolerance = 0.5;
 
             //outline 과 landing 사이 거리,방향으로 가능한 복도타입 판정
             Point3d basePt = baseAxis[0].PointAt(0);

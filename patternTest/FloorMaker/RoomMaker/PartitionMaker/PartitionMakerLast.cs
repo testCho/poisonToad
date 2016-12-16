@@ -36,7 +36,9 @@ namespace patternTest
             lastParam.PartitionPost = new Partition(initialParam.PartitionPre);
             lastParam.PartitionPost.Origin = lastParam.OriginPost;
 
-            DivMakerOutput lastPartition = PartitionMaker.DrawOrtho(lastParam);
+            Polyline lastPoly = RoomOutlineDrawer.GetRoomOutline(lastParam);
+            DivMakerOutput lastPartition = new DivMakerOutput(lastPoly, lastParam);
+
             return lastPartition;
         }
          
@@ -69,7 +71,7 @@ namespace patternTest
 
                 Point3d crossPt = CCXTools.GetCrossPt(testLine, i.PureLine);
 
-                if (PCXTools.IsPtOnLine(crossPt, i.PureLine, 0.005) && PCXTools.IsPtOnLine(crossPt, testLine, 0.005))
+                if (PCXTools.IsPtOnLine(crossPt, i.PureLine, 0.5) && PCXTools.IsPtOnLine(crossPt, testLine, 0.5))
                     return true;
             }
 

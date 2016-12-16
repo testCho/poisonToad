@@ -42,9 +42,9 @@ namespace patternTest
             return changedCrv;
         }
 
-        public static bool IsOverlap(Curve curve1, Curve curve2)
+        public static bool IsOverlap(Curve curve1, Curve curve2, double tolerance)
         {
-            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve1, curve2, 0, 0.005);
+            var polyIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve1, curve2, 0, tolerance);
             foreach (var i in polyIntersection)
             {
                 if (i.IsOverlap)
@@ -54,11 +54,11 @@ namespace patternTest
             return false;
         }
 
-        public static bool IsOverlap(Curve curve, List<Curve> otherCurves)
+        public static bool IsOverlap(Curve curve, List<Curve> otherCurves, double tolerance)
         {
             foreach (Curve i in otherCurves)
             {
-                var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve, i, 0, 0);
+                var tempIntersection = Rhino.Geometry.Intersect.Intersection.CurveCurve(curve, i, 0, tolerance);
                 if (tempIntersection.Count == 0)
                     continue;
 

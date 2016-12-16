@@ -28,7 +28,7 @@ namespace patternTest
         public List<double> GetInitialLengthFactors()
         {
             List<double> lengthFactors = new List<double>();
-            lengthFactors.Add(0.5);
+            lengthFactors.Add(1);
             lengthFactors.AddRange(new List<double>{ 0.3, 0.3});
 
             return lengthFactors;

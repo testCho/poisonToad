@@ -36,7 +36,7 @@ namespace patternTest
 
         public static Line PCXByEquation(Point3d basePt, Polyline boundary, Vector3d direction)
         {
-            double onCurveTolerance = 0.005;
+            double onCurveTolerance = 0.5;
 
             double coverAllLength = new BoundingBox(boundary).Diagonal.Length * 2;
             Line testLine = new Line(basePt, basePt + direction / direction.Length * coverAllLength);
@@ -60,7 +60,7 @@ namespace patternTest
 
         public static Line PCXByEquationStrict(Point3d basePt, Polyline boundary, Vector3d direction)
         {
-            double onCurveTolerance = 0.005;
+            double onCurveTolerance = 0.5;
 
             double coverAllLength = new BoundingBox(boundary).Diagonal.Length * 2;
             Line testLine = new Line(basePt, basePt + direction / direction.Length * coverAllLength);

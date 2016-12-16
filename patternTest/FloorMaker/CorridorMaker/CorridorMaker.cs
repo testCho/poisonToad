@@ -73,13 +73,14 @@ namespace patternTest
                      
         private static double SetBasePtVLimit(Core core, Line baseLine)
         {
+            double vTolerance = 1;
             double vLimit = 0;
 
-            Point3d decidingPt1 = baseLine.PointAt(0.01) - core.UpstairDirec / core.UpstairDirec.Length * 0.01;
-            Point3d decidingPt2 = baseLine.PointAt(0.09) - core.UpstairDirec / core.UpstairDirec.Length * 0.01;
+            Point3d decidingPt1 = baseLine.PointAt(0.01) - core.UpstairDirec / core.UpstairDirec.Length * vTolerance;
+            Point3d decidingPt2 = baseLine.PointAt(0.09) - core.UpstairDirec / core.UpstairDirec.Length * vTolerance; 
 
-            double candidate1 = PCXTools.PCXByEquation(decidingPt1, core.Landing, -core.UpstairDirec).Length + 0.01;
-            double candidate2 = PCXTools.PCXByEquation(decidingPt2, core.Landing, -core.UpstairDirec).Length + 0.01;
+            double candidate1 = PCXTools.PCXByEquationStrict(decidingPt1, core.Landing, -core.UpstairDirec).Length+ vTolerance;
+            double candidate2 = PCXTools.PCXByEquationStrict(decidingPt2, core.Landing, -core.UpstairDirec).Length+ vTolerance;
 
             if (candidate1 > candidate2)
                 vLimit = candidate2;
@@ -97,7 +98,7 @@ namespace patternTest
 
             //process
             double basePtY = SetBasePtVLimit(core, baseLine);
-            Point3d basePt = baseLine.PointAt(0.5) - (core.UpstairDirec / core.UpstairDirec.Length) * SetBasePtVLimit(core, baseLine) / 2;
+            Point3d basePt = baseLine.PointAt(0.5) - (core.UpstairDirec / core.UpstairDirec.Length) * SetBasePtVLimit(core, baseLine) / 2.0;
 
             //set horizontalAxis, 횡축은 외곽선에서 더 먼 쪽을 선택
             Line horizonReached1 = PCXTools.PCXByEquation(basePt, outline, baseLine.UnitTangent);

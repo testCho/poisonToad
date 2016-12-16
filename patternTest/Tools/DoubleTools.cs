@@ -77,7 +77,7 @@ namespace patternTest
 
                 foreach (Stuff i in stuffList)
                 {
-                    binList.Sort((a, b) => BinPackComparer2(a, b, i));
+                    binList.Sort((a, b) => BinPackComparer(a, b, i));
                     binList.First().StuffIncluded.Add(i);
                 }
 
@@ -123,7 +123,7 @@ namespace patternTest
                 return;
             }
 
-            private static int BinPackComparer2(BinPack a, BinPack b, Stuff s)
+            private static int BinPackComparer(BinPack a, BinPack b, Stuff s)
             {
                 //tolerance
                 double nearDecidingRate = 1.2;

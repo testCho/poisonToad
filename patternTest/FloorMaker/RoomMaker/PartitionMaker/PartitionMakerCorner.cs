@@ -53,8 +53,6 @@ namespace patternTest
 
             else
             {
-
-
                 double betweenIndexCounter = paramPreFloor - paramPostCeiling;
 
                 if (betweenIndexCounter == 0)
@@ -184,8 +182,9 @@ namespace patternTest
             Vector3d mainAlign = mainLine.UnitTangent;
             Vector3d mainPerp = VectorTools.RotateVectorXY(mainAlign, Math.PI / 2);
             Point3d origin = param.OriginPost.Point;
+            bool isMainAlignSameAsPostNormal = mainAlign.IsParallelTo(param.OriginPost.BaseLine.UnitNormal, 0.005)==1;
 
-            if (mainAlign != param.OriginPost.BaseLine.UnitNormal)
+            if (!isMainAlignSameAsPostNormal)
             {
                 int originIndex = param.OutlineLabel.Core.FindIndex
                     (i => i.PureLine == param.OriginPost.BasePureLine);
@@ -215,7 +214,7 @@ namespace patternTest
                 Line toBaseLine = PCXTools.PCXByEquationStrict(i, CurveTools.ToPolyline(mainLine.ToNurbsCurve()), -mainPerp);           
                 Line toOutline = PCXTools.PCXByEquationStrict(toBaseLine.PointAt(1), param.OutlineLabel.Pure, mainPerp);
 
-                if (toOutline.PointAt(1).DistanceTo(i) < 0.005)
+                if (toOutline.PointAt(1).DistanceTo(i) < 0.5)
                     finalVertex.Add(i);
             }
 
@@ -229,7 +228,7 @@ namespace patternTest
                 Point3d tempAnchor = toBaseLine.PointAt(1);
                 Line toOutline = PCXTools.PCXByEquationStrict(tempAnchor, param.OutlineLabel.Pure, mainPerp);
 
-                if (toOutline.PointAt(1).DistanceTo(i) > 0.005)
+                if (toOutline.PointAt(1).DistanceTo(i) > 0.5)
                     continue;
 
                 List<RoomLine> tempPartition = new List<RoomLine>();
@@ -240,7 +239,6 @@ namespace patternTest
                 tempParam.PartitionPost = new Partition(tempPartition, param.OriginPost);
                 Polyline tempPoly = RoomOutlineDrawer.GetRoomOutline(tempParam);
 
-               
 
                 outputCandidate.Add(new DivMakerOutput(tempPoly, tempParam));
             }
@@ -249,9 +247,8 @@ namespace patternTest
 
             //TestCandidate
             //나중에 수정.. 지금은 면적일치정도로만..
-            outputCandidate.Sort((x, y) =>
-            (Math.Abs(targetArea - PolylineTools.GetArea(x.Poly)).CompareTo(Math.Abs(targetArea - PolylineTools.GetArea(y.Poly)))));
-
+            outputCandidate.Sort((x, y) => CornerOutputComparer(x, y, targetArea));
+            
             return outputCandidate[0];
         }
 
@@ -286,7 +283,6 @@ namespace patternTest
                 return false;
             }
 
-
             return false;
         }
 
@@ -301,5 +297,71 @@ namespace patternTest
             else
                 return cornerLinePost;
         }
+
+        private static int CornerOutputComparer(DivMakerOutput a, DivMakerOutput b, double targetArea)
+        {
+            //tolerance
+            double nearDecidingRate = 1.2;
+
+            //binPackSet
+            double aLength = a.DivParams.PartitionPost.GetLength();
+            double bLength = b.DivParams.PartitionPost.GetLength();
+
+            double aArea = PolylineTools.GetArea(a.Poly);
+            double bArea = PolylineTools.GetArea(b.Poly);
+
+            double aProperity = Math.Abs(aArea - targetArea);
+            double bProperity = Math.Abs(bArea - targetArea);
+
+            //decider
+            bool IsAMoreProper = aProperity / bProperity < 0.7;
+            bool IsAShorter = aLength / bLength < 0.8;
+
+            //
+
+            if (aArea <= targetArea)
+            {
+                if (bArea <= targetArea)
+                {
+                    if (IsAMoreProper)
+                    {
+                        if (IsAShorter)
+                            return -1;
+                        return 1;
+                    }
+                   
+                }
+
+                if (aArea * nearDecidingRate >= targetArea)
+                {
+                    if (IsAShorter)
+                        return -1;
+                    return 1;
+                } 
+
+                return 1;
+            }
+
+            if (bArea <= targetArea)
+            {
+                if (bArea * nearDecidingRate >= targetArea)
+                {
+                    if (IsAShorter)
+                        return -1;
+                    return 1;
+                }
+                return -1;
+            }
+
+            if (IsAMoreProper)
+            {
+                if (IsAShorter)
+                    return -1;
+            }
+            return 1;
+        }
+        
+
+
     }
 }

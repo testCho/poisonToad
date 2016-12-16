@@ -73,7 +73,8 @@ namespace patternTest
         {
             List<double> vertexOnBaseParam = new List<double>();
 
-            double onDecidingTolerence = 0.005;
+            double onDecidingTolerence = 0.5;
+            double SameDecidingTolerence = 0.005;
 
             List<Point3d> baseVertex = new List<Point3d>(basePoly);
             List<Point3d> findVertex = new List<Point3d>(vertexFindPoly);
@@ -86,7 +87,7 @@ namespace patternTest
                 Point3d closestPtOnCore = baseCrv.PointAt(closestParam);
 
                 bool IsOnCurve = i.DistanceTo(closestPtOnCore) < onDecidingTolerence;
-                bool IsSameAsOriginalVertex = Math.Abs(Math.Round(closestParam) - closestParam) < onDecidingTolerence;
+                bool IsSameAsOriginalVertex = Math.Abs(Math.Round(closestParam) - closestParam) < SameDecidingTolerence;
 
                 if (IsOnCurve && !IsSameAsOriginalVertex)
                     vertexOnBaseParam.Add(closestParam);
@@ -173,11 +174,11 @@ namespace patternTest
 
             foreach (Curve i in trimmeeSeg)
             {
-                if (!CurveTools.IsOverlap(i, trimmerCrv))
+                if (!CurveTools.IsOverlap(i, trimmerCrv,0.005))
                     memberToJoin.Add(i);
             }
 
-            List<Curve> joinedCrvs = Curve.JoinCurves(memberToJoin, 0, true).ToList();
+            List<Curve> joinedCrvs = Curve.JoinCurves(memberToJoin, 0.5, true).ToList();
 
             foreach (Curve i in joinedCrvs)
                 trimmed.Add(CurveTools.ToPolyline(i));
@@ -209,9 +210,9 @@ namespace patternTest
                 {
                     Curve jCrv = j.ToNurbsCurve();
 
-                    if (CurveTools.IsOverlap(jCrv, corridorCrv))
+                    if (CurveTools.IsOverlap(jCrv, corridorCrv,0.005))
                         currentPolyLabels.Add(new RoomLine(j, LineType.Corridor));
-                    else if (CurveTools.IsOverlap(jCrv, coreCrv))
+                    else if (CurveTools.IsOverlap(jCrv, coreCrv,0.005))
                         currentPolyLabels.Add(new RoomLine(j, LineType.Core));
                 }
 
