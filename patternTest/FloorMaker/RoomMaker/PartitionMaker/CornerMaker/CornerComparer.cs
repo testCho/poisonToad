@@ -11,10 +11,10 @@ namespace patternTest
     {
         //field
         private double fillingTolerance = 0.75;
-        private double aspectTolerance = 0.40;
-        private double areaFitTolerance = 1.20;
-        private double areaInitiative = 0.80;
-        private double lengthInitiative = 0.80;   
+        private double aspectTolerance = 0.5;
+        private double areaFitTolerance = 1.25;
+        private double areaInitiative = 0.75;
+        private double lengthInitiative = 0.75;   
 
 
         //main method

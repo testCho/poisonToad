@@ -334,13 +334,13 @@ namespace patternTest
             //체 몇개 더 추가..
             candidate.Sort((x, y) => AreaFitnessComparer(x, y, targetArea));
 
-            //debug
-            foreach (DivMakerOutput i in candidate)
-            {
-                Rhino.RhinoDoc.ActiveDoc.Objects.Add(i.Poly.ToNurbsCurve());
-                Rhino.RhinoDoc.ActiveDoc.Views.Redraw();
-            }
-            //
+            ////debug
+            //foreach (DivMakerOutput i in candidate)
+            //{
+            //    Rhino.RhinoDoc.ActiveDoc.Objects.Add(i.Poly.ToNurbsCurve());
+            //    Rhino.RhinoDoc.ActiveDoc.Views.Redraw();
+            //}
+            ////
 
             return candidate[0];
         }
@@ -479,6 +479,9 @@ namespace patternTest
             if (outputA == null)
                 return 1;
 
+            if (outputB == null)
+                return -1;
+
             //setting
             double aArea = PolylineTools.GetArea(outputA.Poly);
             double bArea = PolylineTools.GetArea(outputB.Poly);
@@ -496,7 +499,7 @@ namespace patternTest
 
             if (isACostLarger)
             {
-                if (bCost / aCost > 0.80)
+                if (bCost / aCost > 0.8)
                 {
                     if (aLength < bLength )
                         return -1;
@@ -507,7 +510,7 @@ namespace patternTest
 
             else
             {
-                if (aCost / bCost > 0.80)
+                if (aCost / bCost > 0.8)
                 {
                     if (bLength <aLength)
                         return 1;
@@ -525,7 +528,7 @@ namespace patternTest
             if (isAreaEnough)
                 return Math.Abs(candidateArea - targetArea);
 
-            return Math.Abs(candidateArea - targetArea/1.2);
+            return Math.Abs(candidateArea * 1.2 - targetArea);
         }
     }
 }
