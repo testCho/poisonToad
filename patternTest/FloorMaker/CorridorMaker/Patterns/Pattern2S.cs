@@ -9,18 +9,29 @@ namespace patternTest
 {
     class Corr_OneWayVertical1: ICorridorPattern
     {
-        public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
-        {
-            List<double> tempFactors = new List<double>();
-            if (lengthFactors.Count == 0)
-                tempFactors = GetInitialLengthFactors();
-            else
-                tempFactors = lengthFactors;
+        //field
+        private string name = "편복도 일방향 세로형";
+        private List<double> lengthFactors = new List<double> { 0.5 };
+        private List<string> factorName = new List<string> { "복도 세로길이" };
 
+
+        //property        
+        public string Name { get { return name; } private set { } }
+        public List<string> ParamName { get { return factorName; } private set { } }
+        public List<double> Param
+        {
+            get { return lengthFactors; }
+            set { lengthFactors = value as List<double>; }
+        }
+
+
+        //main method
+        public List<Polyline> Draw(Line baseLine, List<Line> mainAxis, Core core, Polyline outline)
+        {
             Point3d anchor1 = DrawAnchor1(baseLine, mainAxis);
             Point3d anchor2 = DrawAnchor2(anchor1, core, mainAxis);
             Point3d anchor3 = DrawAnchor3(anchor2, outline, mainAxis, baseLine);
-            Point3d anchor4 = DrawAnchor4(anchor3, outline, mainAxis, tempFactors[0]);
+            Point3d anchor4 = DrawAnchor4(anchor3, outline, mainAxis, Param[0]);
 
             List<Point3d> anchors = new List<Point3d>();
             anchors.Add(anchor1);
@@ -31,21 +42,14 @@ namespace patternTest
             return DrawCorridor(anchors, mainAxis);
         }
 
-        public List<double> GetInitialLengthFactors()
-        {
-            List<double> lengthFactors = new List<double>();
-            lengthFactors.Add(0.5);
 
-            return lengthFactors;
-        }
-
-        //
+        // drawing method
         private static Point3d DrawAnchor1(Line baseLine, List<Line> baseAxis)
         {
             Point3d anchor = new Point3d();
 
             Point3d basePt = baseAxis[0].PointAt(0);
-            Point3d anchorCenter = basePt + baseAxis[0].UnitTangent * (baseLine.Length / 2.0 + Corridor.OneWayWidth / 2);
+            Point3d anchorCenter = basePt + baseAxis[0].UnitTangent * (baseLine.Length / 2.0 + CorridorDimension.OneWayWidth / 2);
             anchor = anchorCenter; //임시
 
             return anchor;
@@ -56,7 +60,7 @@ namespace patternTest
             Point3d anchor2 = new Point3d();
 
             double coreSideLimit = PCXTools.PCXByEquation(baseAxis[0].PointAt(0), core.CoreLine, -baseAxis[1].UnitTangent).Length;
-            double scaledCorridorWidth = Corridor.OneWayWidth / 2;
+            double scaledCorridorWidth = CorridorDimension.OneWayWidth / 2;
             double vLimit = coreSideLimit + scaledCorridorWidth;
 
             anchor2 = anchor1 - baseAxis[1].UnitTangent * vLimit;
@@ -68,7 +72,7 @@ namespace patternTest
         {
             Point3d anchor3 = new Point3d();
 
-            double outlineSideLimit = PCXTools.PCXByEquation(anchor2, outline, -baseAxis[0].UnitTangent).Length - Corridor.OneWayWidth / 2;
+            double outlineSideLimit = PCXTools.PCXByEquation(anchor2, outline, -baseAxis[0].UnitTangent).Length - CorridorDimension.OneWayWidth / 2;
             double hLimit = baseLine.Length;
 
             if (outlineSideLimit < hLimit)
@@ -83,7 +87,7 @@ namespace patternTest
         {
             Point3d anchor4 = new Point3d();
 
-            double vLimit = PCXTools.PCXByEquation(anchor3, outline, -baseAxis[1].UnitTangent).Length - Corridor.OneWayWidth / 2;
+            double vLimit = PCXTools.PCXByEquation(anchor3, outline, -baseAxis[1].UnitTangent).Length - CorridorDimension.OneWayWidth / 2;
             anchor4 = anchor3 - baseAxis[1].UnitTangent *vLimit * vFactor;
 
             return anchor4;
@@ -100,7 +104,7 @@ namespace patternTest
 
             for (int i = 0; i < anchors.Count - 1; i++)
             {
-                Rectangle3d tempRect = RectangleTools.DrawP2PRect(anchors[i], anchors[i + 1], Corridor.OneWayWidth);
+                Rectangle3d tempRect = RectangleTools.DrawP2PRect(anchors[i], anchors[i + 1], CorridorDimension.OneWayWidth);
                 rectList.Add(tempRect);
             }
 

@@ -62,7 +62,7 @@
     <Compile Include="FloorMaker\RoomMaker\RoomOutlineDrawer.cs" />
     <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitonMaker.cs" />
     <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitonSetter.cs" />
-    <Compile Include="Issue.cs" />
+    <Compile Include="FakeTools.cs" />
     <Compile Include="FloorMaker\CorridorMaker\CorridorMaker.cs" />
     <Compile Include="DataStructure\RoomDS.cs" />
     <Compile Include="FloorMaker\Labeler.cs" />

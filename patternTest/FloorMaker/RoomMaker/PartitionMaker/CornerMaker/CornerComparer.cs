@@ -14,7 +14,14 @@ namespace patternTest
         private double aspectTolerance = 0.5;
         private double areaFitTolerance = 1.25;
         private double areaInitiative = 0.75;
-        private double lengthInitiative = 0.75;   
+        private double lengthInitiative = 0.75;
+
+        //property
+        public double FillingTolerance { get { return fillingTolerance; } set { fillingTolerance = value; } }
+        public double AspectTolerance { get { return aspectTolerance; } set { aspectTolerance = value; } }
+        public double AreaFitTolerance { get { return areaFitTolerance; } set { areaFitTolerance = value; } }
+        public double AreaInitiative { get { return areaInitiative; } set { areaInitiative = value; } }
+        public double LengthInitiative { get { return areaInitiative; } set { areaInitiative = value; } }
 
 
         //main method
@@ -27,7 +34,8 @@ namespace patternTest
             return seivedByAspectRatio;
         }
 
-        //
+
+        //comparer method
         private List<DivMakerOutput> SieveByFillingRate(List<DivMakerOutput> unseived, Plane cornerBasis)
         {
             List<DivMakerOutput> fillingSeived = new List<DivMakerOutput>();
@@ -86,6 +94,7 @@ namespace patternTest
             return aspectSeived;
         }
 
+
         //
         private int AreaFitnessComparer(DivMakerOutput outputA, DivMakerOutput outputB, double targetArea)
         {
@@ -138,12 +147,8 @@ namespace patternTest
             return Math.Abs(candidateArea*areaFitTolerance - targetArea);
         }
          
-        //property
-        public double FillingTolerance {get { return fillingTolerance; } set { fillingTolerance = value; } }
-        public double AspectTolerance { get { return aspectTolerance; } set { aspectTolerance = value; } }
-        public double AreaFitTolerance { get { return areaFitTolerance; } set { areaFitTolerance = value; } }
-        public double AreaInitiative { get { return areaInitiative; } set { areaInitiative = value; } }
-        public double LengthInitiative { get { return areaInitiative; } set { areaInitiative = value; } }
+
+    
     }
 }
 

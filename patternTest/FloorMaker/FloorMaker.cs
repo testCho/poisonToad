@@ -9,24 +9,54 @@ namespace patternTest
 {
     class FloorMaker
     {
-        //main method
-        public static List<Polyline> MakeFloor(List<double> roomAreaSet, Polyline outline, Core core)
+        //field
+        private CorridorMaker corridorMaker;
+        private RoomMaker roomMaker;
+
+        //property
+        public ICorridorPattern CorridorPattern
+        { get { return corridorMaker.Pattern; } set { corridorMaker.Pattern = value as ICorridorPattern;}}
+
+        public ICorridorPattern Recomm_CorridorPattern { get { return corridorMaker.RecommandPattern(); } }
+
+        public IRoomPattern RoomPattern { get; set; }
+        public IRoomPattern Recomm_RoomPattern { get;}
+
+        public Polyline Outline { get; set; }
+        public Core Core { get; set; }
+        public List<double> RoomAreaSet { get; set; }
+
+
+        //constructor
+        public FloorMaker(Polyline outline, Core core, List<double> roomAreaSet)
         {
+            this.corridorMaker = new CorridorMaker(outline, core);
+            this.RoomAreaSet = roomAreaSet;
+        }
+
+
+        //main method
+        public List<Polyline> Make()
+        {
+            if (CorridorPattern == null)
+                corridorMaker.Pattern = Recomm_CorridorPattern;
+
+            List<Polyline> corridor = corridorMaker.Make();
+
             List<Polyline> rooms = new List<Polyline>();
 
-            List<Polyline> corridor = CorridorMaker.MakeCorridor(outline, core);
-            
             /*for proto*/
             if (corridor == null)
             {
-                rooms.Add(outline);
+                rooms.Add(Outline);
                 return rooms;
             }
             /*for proto*/
 
-            List<LabeledOutline> outlineLabel = Labeler.GetOutlineLabel(outline, core, corridor);
-            List<List<double>> distributedAreaSet = DistributeArea(roomAreaSet, outlineLabel);
+            List<LabeledOutline> outlineLabel = Labeler.GetOutlineLabel(Outline, Core, corridor);
+            List<List<double>> distributedAreaSet = DistributeArea(RoomAreaSet, outlineLabel);
             rooms = RoomMaker.DrawRooms(outlineLabel, distributedAreaSet);
+
 
             return rooms;
         }

@@ -9,29 +9,43 @@ namespace patternTest
 {
     class CorridorMaker
     {
-        //main method
-        public static List<Polyline> MakeCorridor(Polyline outline, Core core)
+        //field
+        private ICorridorDecider testDecider = new CorridorDeciderForTest();
+
+        //property
+        public ICorridorPattern Pattern { get; set; }
+        public Core Core { get; set; }
+        public Polyline Outline { get; set;}
+
+
+        //constructor
+        public CorridorMaker(Polyline outline, Core core)
         {
-            Line baseLine = SearchBaseLine(core);
-            List<Line> subAxis = new List<Line>();
-            List<Line> baseAxis = SetBaseAxis(outline, core, baseLine, out subAxis);
+            this.Outline = outline;
+            this.Core = core;
+        }
+        
 
-            ICorridorDecider testDecider = new CorridorDeciderForTest();
-            ICorridorPattern pattern = testDecider.GetCorridorPattern(outline, core, baseAxis, subAxis);
-
+        //main method
+        public List<Polyline> Make()
+        {
             /*for proto*/
-            if (pattern == null)
+            if (Pattern == null)
                 return null;
             /*for proto*/
 
-            List<double> corridorParam = pattern.GetInitialLengthFactors();
-            List<Polyline> corridor = pattern.GetCorridor(baseLine, baseAxis, core, outline, corridorParam);
-
+            Line baseLine = SearchBaseLine(Core);
+            List<Line> subAxis = new List<Line>();
+            List<Line> baseAxis = SetBaseAxis(Outline, Core, baseLine, out subAxis);                       
+            List<Polyline> corridor = Pattern.Draw(baseLine, baseAxis, Core, Outline);
+            
             return corridor;
         }
 
+        public ICorridorPattern RecommandPattern() { return testDecider.GetPattern(Core, Outline); }
 
-        //method
+
+        //drawing method
         private static Line SearchBaseLine(Core core)
         {
             //output

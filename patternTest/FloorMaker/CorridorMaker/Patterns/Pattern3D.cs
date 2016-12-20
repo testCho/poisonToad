@@ -9,40 +9,44 @@ namespace patternTest
 {
     class Corr_TwoWayHorizontal2: ICorridorPattern
     {
-        public List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors)
+        //field
+        private string name = "즁복도 양방향 가로형";
+        private List<double> lengthFactors = new List<double> { 1, 0.3, 0.3};
+        private List<string> factorName = new List<string> { "기준점 세로 위치","복도 길이1","복도 길이2"};
+
+
+        //property
+        public string Name { get { return name; } private set { } }
+        public List<string> ParamName { get { return factorName; } private set { } }
+        public List<double> Param
         {
-            List<double> tempFactors = new List<double>();
-            if (lengthFactors.Count == 0)
-                tempFactors = GetInitialLengthFactors();
-            else
-                tempFactors = lengthFactors;
+            get { return lengthFactors; }
+            set { lengthFactors = value as List<double>; }
+        }
 
-            List<Point3d> anchor1s = DrawAnchor1(baseLine, mainAxis, tempFactors[0]);
 
-            tempFactors.RemoveAt(0);
-            List<Point3d> anchor2s = DrawAnchor2(anchor1s, outline, mainAxis, tempFactors);
+        //main method
+        public List<Polyline> Draw(Line baseLine, List<Line> mainAxis, Core core, Polyline outline)
+        {
+            List<double> tempParam = new List<double>(Param);
+
+            List<Point3d> anchor1s = DrawAnchor1(baseLine, mainAxis, tempParam[0]);
+            tempParam.RemoveAt(0);
+            List<Point3d> anchor2s = DrawAnchor2(anchor1s, outline, mainAxis, Param);
 
             return DrawCorridor(anchor1s, anchor2s);
         }
 
-        public List<double> GetInitialLengthFactors()
-        {
-            List<double> lengthFactors = new List<double>();
-            lengthFactors.Add(1);
-            lengthFactors.AddRange(new List<double>{ 0.3, 0.3});
 
-            return lengthFactors;
-        }
-
-        //
+        // drawing method
         private static List<Point3d> DrawAnchor1(Line baseLine, List<Line> baseAxis, double vFactor)
         {
             //output
             List<Point3d> anchors = new List<Point3d>();
 
             //base setting
-            double minRoomWidth = Corridor.MinRoomWidth; //최소 방 너비
-            double corridorwidth = Corridor.TwoWayWidth; 
+            double minRoomWidth = CorridorDimension.MinRoomWidth; //최소 방 너비
+            double corridorwidth = CorridorDimension.TwoWayWidth; 
             double baseHalfVSize = baseLine.PointAt(0.5).DistanceTo(baseAxis[0].PointAt(0));
             double baseHalfHSize = baseLine.Length / 2;
 
@@ -83,7 +87,7 @@ namespace patternTest
             for(int i=0; i<anchor1.Count;i++)
             {
                 Vector3d tempAxis = mainAxis[0].UnitTangent*Math.Pow(-1,i);
-                double hLimit = PCXTools.PCXByEquation(anchor1[i], outline, tempAxis).Length- Corridor.TwoWayWidth/2;
+                double hLimit = PCXTools.PCXByEquation(anchor1[i], outline, tempAxis).Length- CorridorDimension.TwoWayWidth/2;
                 anchor2.Add(anchor1[i] +tempAxis*hLimit*hFactors[i]);
             }
 
@@ -96,7 +100,7 @@ namespace patternTest
 
             for(int i=0; i<anchor1.Count;i++)
             {
-                Rectangle3d tempRect = RectangleTools.DrawP2PRect(anchor1[i], anchor2[i], Corridor.TwoWayWidth);
+                Rectangle3d tempRect = RectangleTools.DrawP2PRect(anchor1[i], anchor2[i], CorridorDimension.TwoWayWidth);
                 corridors.Add(tempRect.ToPolyline());
             }
 

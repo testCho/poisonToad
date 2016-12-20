@@ -209,6 +209,18 @@ namespace patternTest
         public PartitionParam DivParams { get; set; }
     }
 
+
+    //interface
+    public interface IRoomPattern
+    {
+        string Name { get; }
+
+        List<Polyline> Draw { get; }
+        List<double> Param { get; set; }
+        List<string> ParamName { get; }
+    }
+
+
     //enum
     public enum LineType { Core, Corridor, Outer, Inner } 
     //선타입 - 코어, 복도, 외벽, 내벽

@@ -9,7 +9,7 @@ namespace patternTest
 {
     class CorridorDeciderForTest : ICorridorDecider
     {
-        public ICorridorPattern GetCorridorPattern(Polyline outline, Core core, List<Line> baseAxis, List<Line> subAxis)
+        public ICorridorPattern GetPattern(Polyline outline, Core core, List<Line> baseAxis, List<Line> subAxis)
         {
             double stickTolerance = 0.5;
 
@@ -23,9 +23,9 @@ namespace patternTest
             double toLandingDistV = PCXTools.PCXByEquation(basePt, core.Landing, baseAxis[1].UnitTangent).Length;
 
             bool IsHorizontalOff = toOutlineDistH > toCoreDistH+ stickTolerance;
-            bool IsHEnoughOff = toOutlineDistH > toCoreDistH + Corridor.TwoWayWidth+ stickTolerance;
+            bool IsHEnoughOff = toOutlineDistH > toCoreDistH + CorridorDimension.TwoWayWidth+ stickTolerance;
             bool IsVerticalOff = toOutlineDistV > toCoreDistV+ stickTolerance;
-            bool IsVEnoughOff = toOutlineDistV > Corridor.MinRoomWidth+ toLandingDistV+ stickTolerance;
+            bool IsVEnoughOff = toOutlineDistV > CorridorDimension.MinRoomWidth+ toLandingDistV+ stickTolerance;
 
             bool IsHLognerThanV = baseAxis[0].Length > subAxis[1].Length;
 

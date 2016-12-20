@@ -7,7 +7,7 @@ using System.IO;
 
 namespace patternTest
 {
-    class Core
+    public class Core
     {
         //constructor
         public Core(Polyline coreLine, Polyline landing, Vector3d upstairDirec)
@@ -23,7 +23,7 @@ namespace patternTest
         public Vector3d UpstairDirec { get; private set; }
     }
 
-    class Corridor
+    public class CorridorDimension
     {
         //field
         private static double scale = 1;
@@ -43,15 +43,19 @@ namespace patternTest
 
 
     //interface
-    interface ICorridorPattern
+    public interface ICorridorPattern
     {
-        List<Polyline> GetCorridor(Line baseLine, List<Line> mainAxis, Core core, Polyline outline, List<double> lengthFactors);
-        List<double> GetInitialLengthFactors();
+        string Name { get; }
+
+        List<Polyline> Draw(Line baseLine, List<Line> mainAxis, Core core, Polyline outline);
+        List<double> Param { get; set; }
+        List<string> ParamName { get; }        
+        
     }
 
-    interface ICorridorDecider
+    public interface ICorridorDecider
     {
-        ICorridorPattern GetCorridorPattern(Polyline outline, Core core, List<Line> baseAxis, List<Line> subAxis);
+        ICorridorPattern GetPattern(Core core, Polyline outline);
     }
 
 }

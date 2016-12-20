@@ -148,7 +148,7 @@ namespace patternTest
 
             double toEndLength = new Line(param.OriginPost.Point, param.OriginPost.BaseLine.EndPt).Length;
 
-            if (toEndLength < Corridor.MinLengthForDoor)
+            if (toEndLength < CorridorDimension.MinLengthForDoor)
             {
                 if (originIndex == coreSegCount - 1)
                 {
@@ -160,7 +160,7 @@ namespace patternTest
                 return;
             }
 
-            param.OriginPost.Point = new Point3d(param.OriginPost.Point + param.OriginPost.BaseLine.UnitTangent * Corridor.MinLengthForDoor);
+            param.OriginPost.Point = new Point3d(param.OriginPost.Point + param.OriginPost.BaseLine.UnitTangent * CorridorDimension.MinLengthForDoor);
             return;
         }
 
@@ -332,7 +332,8 @@ namespace patternTest
         private static DivMakerOutput SelectBetterPartition(List<DivMakerOutput> candidate, double targetArea)
         {
             //체 몇개 더 추가..
-            candidate.Sort((x, y) => AreaFitnessComparer(x, y, targetArea));
+            CornerComparer tempComparer = new CornerComparer();
+            List<DivMakerOutput> sortedMakerOutput = tempComparer.Seive(candidate, targetArea, )
 
             ////debug
             //foreach (DivMakerOutput i in candidate)
@@ -445,7 +446,7 @@ namespace patternTest
 
             double betweenEnd = new Vector3d(baseLineEnd - currentDivOrigin).Length;
 
-            if (betweenEnd < Corridor.MinLengthForDoor * 0.9)
+            if (betweenEnd < CorridorDimension.MinLengthForDoor * 0.9)
                 return true;
 
             return false;
@@ -458,7 +459,7 @@ namespace patternTest
 
             double betweenStart = new Vector3d(currentDivOrigin - baseLineStart).Length;
 
-            if (betweenStart < Corridor.MinLengthForDoor * 0.9)
+            if (betweenStart < CorridorDimension.MinLengthForDoor * 0.9)
                 return true;
 
             return false;

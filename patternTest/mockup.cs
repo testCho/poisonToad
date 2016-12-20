@@ -8,24 +8,27 @@ using System.IO;
 
 namespace patternTest
 {
-    interface IRoomMakerPattern
+    public interface ICommander
     {
-        List<Polyline> DrawRooms();
+        void Excute();
     }
 
-    interface IRoomMakerDecider
+    public interface IInvoker
     {
-        IRoomMakerPattern GetRoomMaker();
+        void SetCommand();
     }
 
-    class Room_LinearSweeper : IRoomMakerPattern
+    public class CorridorParamControl: ICommander
     {
-        public List<Polyline> DrawRooms()
+        private ICorridorPattern executedCorridor;
+        
+        public CorridorParamControl(ICorridorPattern corridor)
         {
-            List<Polyline> rooms = new List<Polyline>();
-            return rooms;
-        }
-    }
+            this.executedCorridor = corridor;
+        } 
 
-    
+        public void Excute()
+        {
+        }
+    } 
 }

@@ -61,7 +61,7 @@ namespace patternTest
                 return;
             }
       
-            if(nearestCorridor.Length < Corridor.MinLengthForDoor)
+            if(nearestCorridor.Length < CorridorDimension.MinLengthForDoor)
             {
                 SetOriginNextStart(setterParam);
                 FindCorrFromSameBase(setterParam);
@@ -69,7 +69,7 @@ namespace patternTest
             }
 
             Point3d nearestBase = nearestCorridor.StartPt;
-            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
+            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * CorridorDimension.MinLengthForDoor);
 
             PartitionOrigin originNext = new PartitionOrigin(baseWithMinCorridor, nearestCorridor);
 
@@ -83,7 +83,7 @@ namespace patternTest
 
             double originToCorridorEnd = new Vector3d(nearestCorridor.PointAt(1)- setterParam.OriginPost.Point).Length;
 
-            if(originToCorridorEnd<Corridor.MinLengthForDoor)
+            if(originToCorridorEnd<CorridorDimension.MinLengthForDoor)
             {
                 SetOriginNextStart(setterParam);
                 FindCorrFromSameBase(setterParam);
@@ -91,7 +91,7 @@ namespace patternTest
             }
 
             Point3d nearestBase = setterParam.OriginPost.Point;
-            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * Corridor.MinLengthForDoor);
+            Point3d baseWithMinCorridor = new Point3d(nearestBase + nearestCorridor.UnitTangent * CorridorDimension.MinLengthForDoor);
 
             PartitionOrigin originNext = new PartitionOrigin(baseWithMinCorridor, nearestCorridor);
 
@@ -266,7 +266,7 @@ namespace patternTest
                 double toEndLength = 
                     new Vector3d(coreSeg[dividerIndex].EndPt - setterParam.PartitionPre.Origin.Point).Length;
 
-                if (toEndLength >= Corridor.MinLengthForDoor)
+                if (toEndLength >= CorridorDimension.MinLengthForDoor)
                     return true;
             }
 
@@ -275,7 +275,7 @@ namespace patternTest
                 double toStartLength =
                    new Vector3d(setterParam.OriginPost.Point- coreSeg[originIndex].StartPt).Length;
 
-                if (toStartLength >= Corridor.MinLengthForDoor)
+                if (toStartLength >= CorridorDimension.MinLengthForDoor)
                     return true;
             }
 
@@ -284,7 +284,7 @@ namespace patternTest
                 for(int i = dividerIndex+1; i<originIndex; i++)
                 {
                     if ((coreSeg[i].Type == LineType.Corridor) &&
-                        (coreSeg[i].Length >= Corridor.MinLengthForDoor))
+                        (coreSeg[i].Length >= CorridorDimension.MinLengthForDoor))
                         return true;
                 }
             }
@@ -299,7 +299,7 @@ namespace patternTest
 
             double dividerToOrigin = new Vector3d(setterParam.OriginPost.Point - setterParam.PartitionPre.Origin.Point).Length;
 
-            if (dividerToOrigin < Corridor.MinLengthForDoor)
+            if (dividerToOrigin < CorridorDimension.MinLengthForDoor)
                 return false;
 
             return true;
