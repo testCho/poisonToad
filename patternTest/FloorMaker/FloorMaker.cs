@@ -12,57 +12,87 @@ namespace patternTest
         //field
         private CorridorMaker corridorMaker;
         private RoomMaker roomMaker;
+        private List<LabeledOutline> outlineLabels;
+        private List<List<double>> distributedArea;
+
 
         //property
-        public ICorridorPattern CorridorPattern
-        { get { return corridorMaker.Pattern; } set { corridorMaker.Pattern = value as ICorridorPattern;}}
-
+        
+        //-pattern
+        public ICorridorPattern CorridorPattern { get { return corridorMaker.Pattern; } set { corridorMaker.Pattern = value as ICorridorPattern;}}
         public ICorridorPattern Recomm_CorridorPattern { get { return corridorMaker.RecommandPattern(); } }
-
         public IRoomPattern RoomPattern { get; set; }
-        public IRoomPattern Recomm_RoomPattern { get;}
-
+        public IRoomPattern Recomm_RoomPattern { get { return roomMaker.RecommandPattern();}}     
+            
+        //-input
         public Polyline Outline { get; set; }
         public Core Core { get; set; }
         public List<double> RoomAreaSet { get; set; }
+        
+        //-output
+        public List<Polyline> Corridor { get; private set; }
+        public List<Polyline> Room { get; private set; }
 
 
         //constructor
         public FloorMaker(Polyline outline, Core core, List<double> roomAreaSet)
         {
-            this.corridorMaker = new CorridorMaker(outline, core);
+            this.corridorMaker = new CorridorMaker();
+            this.roomMaker = new RoomMaker();
+
             this.RoomAreaSet = roomAreaSet;
+            this.Outline = outline;
+            this.Core = core;            
         }
 
 
         //main method
-        public List<Polyline> Make()
+        public void Make()
         {
+            DrawCorridor();
+
+            /*for proto*/
+            if (Corridor == null)
+            {
+                this.Room = new List<Polyline> { Outline };
+                return;
+            }
+
+            LabelAndDistributeArea();
+            DrawRoom();
+        }
+
+
+        //method
+        private void DrawCorridor()
+        {
+            corridorMaker.Outline = this.Outline;
+            corridorMaker.Core = this.Core;
+
             if (CorridorPattern == null)
                 corridorMaker.Pattern = Recomm_CorridorPattern;
 
-            List<Polyline> corridor = corridorMaker.Make();
-
-            List<Polyline> rooms = new List<Polyline>();
-
-            /*for proto*/
-            if (corridor == null)
-            {
-                rooms.Add(Outline);
-                return rooms;
-            }
-            /*for proto*/
-
-            List<LabeledOutline> outlineLabel = Labeler.GetOutlineLabel(Outline, Core, corridor);
-            List<List<double>> distributedAreaSet = DistributeArea(RoomAreaSet, outlineLabel);
-            rooms = RoomMaker.DrawRooms(outlineLabel, distributedAreaSet);
-
-
-            return rooms;
+            this.Corridor = corridorMaker.Make();
         }
 
-        //method
-        private static List<List<double>> DistributeArea(List<double> areaSet, List<LabeledOutline> outlineLabel)
+        private void LabelAndDistributeArea()
+        {
+            this.outlineLabels = Labeler.GetOutlineLabel(Outline, Core, Corridor);
+            this.distributedArea = DistributeArea(RoomAreaSet, outlineLabels);
+        }
+
+        private void DrawRoom()
+        {
+            roomMaker.OutlineLabels = this.outlineLabels;
+            roomMaker.TargetArea = this.distributedArea;
+
+            if (RoomPattern == null)
+                roomMaker.Pattern = Recomm_RoomPattern;
+
+            this.Room = roomMaker.Make();
+        }
+
+        private List<List<double>> DistributeArea(List<double> areaSet, List<LabeledOutline> outlineLabel)
         {
             List<List<double>> distributedArea = new List<List<double>>();
             List<double> outlineArea = new List<double>();

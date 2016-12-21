@@ -11,22 +11,23 @@ namespace patternTest
     {
         public static List<Polyline> DebugRoom(Polyline outline, Polyline coreLine, Polyline landing)
         {
-            Vector3d upDirec = Test.MakeUpDirec(coreLine, landing);
-            Core core = new Core(coreLine, landing, upDirec);
+            Core core = new Core(coreLine, landing);
             List<double> areaSet = new List<double> { 45, 60,60};
 
-            List<Polyline> result = FloorMaker.MakeFloor(areaSet, outline, core);
+            FloorMaker testMaker = new FloorMaker(outline, core, areaSet);
+            testMaker.Make();
+
+            List<Polyline> result= testMaker.Room;
 
             return result;
         }
 
         public static List<Polyline> DebugCorridor(Polyline outline, Polyline coreLine, Polyline landing)
         {
+            Core core = new Core(coreLine, landing);
 
-            Vector3d upDirec = Test.MakeUpDirec(coreLine, landing);
-            Core core = new Core(coreLine, landing, upDirec);
-
-            List<Polyline> corridor = CorridorMaker.MakeCorridor(outline, core);
+            CorridorMaker testMaker2 = new CorridorMaker(outline, core);
+            List<Polyline> corridor = testMaker2.Make();
 
             return corridor;
             

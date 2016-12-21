@@ -34,6 +34,11 @@ namespace patternTest
             return seivedByAspectRatio;
         }
 
+        public List<DivMakerOutput> LightSeive(List<DivMakerOutput> candidates, double targetArea)
+        {
+            candidates.Sort((a, b) => AreaFitnessComparer(a, b, targetArea));
+            return candidates;
+        }
 
         //comparer method
         private List<DivMakerOutput> SieveByFillingRate(List<DivMakerOutput> unseived, Plane cornerBasis)

@@ -9,26 +9,34 @@ namespace patternTest
 {
     class CorridorDeciderForTest : ICorridorDecider
     {
-        public ICorridorPattern GetPattern(Polyline outline, Core core, List<Line> baseAxis, List<Line> subAxis)
+        public ICorridorPattern GetPattern(Polyline outline, Core core)
         {
-            double stickTolerance = 0.5;
 
             //outline 과 landing 사이 거리,방향으로 가능한 복도타입 판정
-            Point3d basePt = baseAxis[0].PointAt(0);
+            double stickTolerance = 0.5;
+            List<List<Line>> axisSet = CorridorAxisMaker.MakeAxis(outline, core);
+            List<Line> mainAxis = axisSet[0];
+            List<Line> subAxis = axisSet[1];
+
+            //set distance
+            Point3d basePt = core.CenterPt;
 
             double toOutlineDistH = subAxis[0].Length;
             double toCoreDistH = PCXTools.PCXByEquation(basePt, core.CoreLine, subAxis[0].UnitTangent).Length;
-            double toOutlineDistV = baseAxis[1].Length;
-            double toCoreDistV = PCXTools.PCXByEquation(basePt, core.CoreLine, baseAxis[1].UnitTangent).Length;
-            double toLandingDistV = PCXTools.PCXByEquation(basePt, core.Landing, baseAxis[1].UnitTangent).Length;
+            double toOutlineDistV = mainAxis[1].Length;
+            double toCoreDistV = PCXTools.PCXByEquation(basePt, core.CoreLine, mainAxis[1].UnitTangent).Length;
+            double toLandingDistV = basePt.DistanceTo(core.BaseLine.PointAt(0.5));
 
+            //set decider
             bool IsHorizontalOff = toOutlineDistH > toCoreDistH+ stickTolerance;
             bool IsHEnoughOff = toOutlineDistH > toCoreDistH + CorridorDimension.TwoWayWidth+ stickTolerance;
             bool IsVerticalOff = toOutlineDistV > toCoreDistV+ stickTolerance;
             bool IsVEnoughOff = toOutlineDistV > CorridorDimension.MinRoomWidth+ toLandingDistV+ stickTolerance;
 
-            bool IsHLognerThanV = baseAxis[0].Length > subAxis[1].Length;
+            bool IsHLognerThanV = mainAxis[0].Length > subAxis[1].Length;
 
+
+            //compare
             if (IsHorizontalOff)
             {
                 if (IsVerticalOff)

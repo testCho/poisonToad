@@ -28,7 +28,7 @@ namespace patternTest
         ///<returns>The command name as it appears on the Rhino command line.</returns>
         public override string EnglishName
         {
-            get { return "roooom"; }
+            get { return "MakeFloor"; }
         }
 
         public void Print(List<Polyline> lc, Color color, RhinoDoc doc)

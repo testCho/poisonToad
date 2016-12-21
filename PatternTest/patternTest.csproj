@@ -44,8 +44,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\CornerMaker\CornerComparer.cs" />
-    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitionMakerLast.cs" />
+    <Compile Include="FloorMaker\CorridorMaker\CorridorAxisMaker.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\PartitionMaker\CornerMaker\CornerComparer.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\PartitionMaker\PartitionMakerLast.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\RoomP1DS.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\RoomP1.cs" />
     <Compile Include="Tools\CCXTools.cs" />
     <Compile Include="Tools\PCXTools.cs" />
     <Compile Include="Tools\PointTools.cs" />
@@ -58,13 +61,12 @@
     <Compile Include="FloorMaker\CorridorMaker\CorridorDecider.cs" />
     <Compile Include="DataStructure\CorridorDS.cs" />
     <Compile Include="FloorMaker\CorridorMaker\Patterns\Pattern3S.cs" />
-    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\CornerMaker\PartitionMakerCorner.cs" />
-    <Compile Include="FloorMaker\RoomMaker\RoomOutlineDrawer.cs" />
-    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitonMaker.cs" />
-    <Compile Include="FloorMaker\RoomMaker\PartitionMaker\PartitonSetter.cs" />
-    <Compile Include="FakeTools.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\PartitionMaker\CornerMaker\PartitionMakerCorner.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\RoomOutlineDrawer.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\PartitionMaker\PartitonMaker.cs" />
+    <Compile Include="FloorMaker\RoomMaker\Patterns\Pattern1\PartitionMaker\PartitonSetter.cs" />
     <Compile Include="FloorMaker\CorridorMaker\CorridorMaker.cs" />
-    <Compile Include="DataStructure\RoomDS.cs" />
+    <Compile Include="DataStructure\LabelDS.cs" />
     <Compile Include="FloorMaker\Labeler.cs" />
     <Compile Include="FloorMaker\RoomMaker\RoomMaker.cs" />
     <Compile Include="FloorMaker\FloorMaker.cs" />

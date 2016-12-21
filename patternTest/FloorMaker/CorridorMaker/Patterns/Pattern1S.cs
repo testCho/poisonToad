@@ -28,9 +28,9 @@ namespace patternTest
 
 
         //main method
-        public List<Polyline> Draw(Line baseLine, List<Line> mainAxis, Core core, Polyline outline)
+        public List<Polyline> Draw(List<Line> mainAxis, Core core, Polyline outline)
         {
-            Point3d anchor1 = DrawAnchor1(baseLine, mainAxis);
+            Point3d anchor1 = DrawAnchor1(core.BaseLine, mainAxis);
             Point3d anchor2 = DrawAnchor2(anchor1, core, outline, mainAxis);
             Point3d anchor3 = DrawAnchor3(anchor2, outline, mainAxis, lengthFactors[0]);
 

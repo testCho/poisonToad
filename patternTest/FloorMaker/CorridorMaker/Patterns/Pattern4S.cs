@@ -26,11 +26,11 @@ namespace patternTest
 
 
         //main method
-        public List<Polyline> Draw(Line baseLine, List<Line> mainAxis, Core core, Polyline outline)
+        public List<Polyline> Draw(List<Line> mainAxis, Core core, Polyline outline)
         {
             double subLength = new double();
-            Point3d anchor1 = DrawAnchor1(outline, core, baseLine, mainAxis, out subLength);
-            Point3d anchor2 = DrawAnchor2(anchor1, outline, core, baseLine, mainAxis, lengthFactors[0]);
+            Point3d anchor1 = DrawAnchor1(outline, core, core.BaseLine, mainAxis, out subLength);
+            Point3d anchor2 = DrawAnchor2(anchor1, outline, core, core.BaseLine, mainAxis, lengthFactors[0]);
             Point3d anchor3 = DrawAnchor3(anchor2, outline, mainAxis, Param[1],subLength);
 
             List<Point3d> anchors = new List<Point3d>();

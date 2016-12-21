@@ -333,7 +333,8 @@ namespace patternTest
         {
             //체 몇개 더 추가..
             CornerComparer tempComparer = new CornerComparer();
-            List<DivMakerOutput> sortedMakerOutput = tempComparer.Seive(candidate, targetArea, )
+            tempComparer.AreaInitiative = 0.8;
+            List<DivMakerOutput> sortedMakerOutput = tempComparer.LightSeive(candidate, targetArea);
 
             ////debug
             //foreach (DivMakerOutput i in candidate)
@@ -473,63 +474,6 @@ namespace patternTest
                 return true;
 
             return false;
-        }
-
-        private static int AreaFitnessComparer(DivMakerOutput outputA, DivMakerOutput outputB, double targetArea)
-        {
-            if (outputA == null)
-                return 1;
-
-            if (outputB == null)
-                return -1;
-
-            //setting
-            double aArea = PolylineTools.GetArea(outputA.Poly);
-            double bArea = PolylineTools.GetArea(outputB.Poly);
-
-            double aLength = outputA.DivParams.PartitionPost.GetLength();
-            double bLength = outputB.DivParams.PartitionPost.GetLength();
-
-            double aCost = ComputeCost(aArea, targetArea);
-            double bCost = ComputeCost(bArea, targetArea);
-
-            //decider
-            bool isACostLarger = aCost > bCost;
-
-            //compare
-
-            if (isACostLarger)
-            {
-                if (bCost / aCost > 0.8)
-                {
-                    if (aLength < bLength )
-                        return -1;
-                }
-
-                return 1;
-            }
-
-            else
-            {
-                if (aCost / bCost > 0.8)
-                {
-                    if (bLength <aLength)
-                        return 1;
-                }
-
-                return -1;
-            }
-
-        }
-
-        private static double ComputeCost(double candidateArea, double targetArea)
-        {
-            bool isAreaEnough = candidateArea >= targetArea;
-
-            if (isAreaEnough)
-                return Math.Abs(candidateArea - targetArea);
-
-            return Math.Abs(candidateArea * 1.2 - targetArea);
         }
     }
 }
