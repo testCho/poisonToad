@@ -6,13 +6,17 @@ using Rhino.Commands;
 using Rhino.Geometry;
 using Rhino.Input;
 using Rhino.Input.Custom;
+using System.Linq;
 
-namespace patternTest
+using SmallHousing.Utility;
+
+
+namespace SmallHousing
 {
     [System.Runtime.InteropServices.Guid("5520beef-8761-4ab0-abb3-442ac054e300")]
-    public class patternTestCommand : Command
+    public class SmallHousingCommand : Command
     {
-        public patternTestCommand()
+        public SmallHousingCommand()
         {
             // Rhino only creates one instance of each command class defined in a
             // plug-in, so it is safe to store a refence in a static property.
@@ -20,7 +24,7 @@ namespace patternTest
         }
 
         ///<summary>The only instance of this command.</summary>
-        public static patternTestCommand Instance
+        public static SmallHousingCommand Instance
         {
             get; private set;
         }
@@ -31,62 +35,13 @@ namespace patternTest
             get { return "MakeFloor"; }
         }
 
-        public void Print(List<Polyline> lc, Color color, RhinoDoc doc)
+        public static void Print(IEnumerable<Polyline> lc, Color color, RhinoDoc doc)
         {
-
             foreach (var r in lc)
             {
-                Guid temp = doc.Objects.Add(r.ToNurbsCurve());
-                var obj = doc.Objects.Find(temp);
-                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
-                obj.Attributes.ObjectColor = color;
-                obj.CommitChanges();
-            }
-        }
-
-        public void Print(Polyline r, Color color, RhinoDoc doc)
-        {
-
-       
-                Guid temp = doc.Objects.Add(r.ToNurbsCurve());
-                var obj = doc.Objects.Find(temp);
-                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
-                obj.Attributes.ObjectColor = color;
-                obj.CommitChanges();
-            
-        }
-
-        public void Print(List<Brep> lc, Color color, RhinoDoc doc)
-        {
-
-            foreach (var r in lc)
-            {
-                Guid temp = doc.Objects.Add(r);
-                var obj = doc.Objects.Find(temp);
-                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
-                obj.Attributes.ObjectColor = color;
-                obj.CommitChanges();
-            }
-        }
-
-        public void Print(Brep lc, Color color, RhinoDoc doc)
-        {
-
-     
-                Guid temp = doc.Objects.Add(lc);
-                var obj = doc.Objects.Find(temp);
-                obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
-                obj.Attributes.ObjectColor = color;
-                obj.CommitChanges();
-            
-        }
-
-        public void Print(Curve[] lc, Color color, RhinoDoc doc)
-        {
-
-            foreach (var r in lc)
-            {
-                Guid temp = doc.Objects.Add(r);
+                if (r.Count == 0)
+                    continue;
+                Guid temp = doc.Objects.AddPolyline(r);
                 var obj = doc.Objects.Find(temp);
                 obj.Attributes.ColorSource = Rhino.DocObjects.ObjectColorSource.ColorFromObject;
                 obj.Attributes.ObjectColor = color;
@@ -98,6 +53,7 @@ namespace patternTest
         {
             RhinoApp.WriteLine("안녕하세요 방만드는기계 입니다.");
 
+            //
             Polyline outline = new Polyline();
             Polyline coreLine = new Polyline();
             Polyline landing = new Polyline();
@@ -135,21 +91,13 @@ namespace patternTest
             coreLine = testPoly[1];
             landing = testPoly[2];
 
+
             List<Polyline> rooms = Debugger.DebugRoom(outline, coreLine, landing);
-            //List<Brep> breps = new List<Brep>();
-            //foreach (Polyline i in rooms)
-            //    breps.Add(Extrusion.Create(i.ToNurbsCurve(), -3, true).ToBrep());
+            foreach (Polyline i in rooms)
+            {
+                doc.Objects.AddCurve(i.ToNurbsCurve());
+            }
 
-            List<Polyline> corridor = Debugger.DebugCorridor(outline, coreLine, landing);
-            //List<Brep> corridorBreps = new List<Brep>();
-            //foreach (Polyline i in corridor)
-            //    corridorBreps.Add(Extrusion.Create(i.ToNurbsCurve(), -0.01, true).ToBrep());
-
-            Brep outlineBrep = Extrusion.Create(outline.ToNurbsCurve(), -0.01, true).ToBrep();
-            Print(rooms, Color.LightGoldenrodYellow, doc);
-
-            if(corridor!=null)
-            Print(corridor, Color.Turquoise, doc);
             doc.Views.Redraw();
 
             RhinoApp.WriteLine("최선을 다했습니다만...");

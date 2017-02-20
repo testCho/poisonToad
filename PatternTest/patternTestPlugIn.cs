@@ -1,4 +1,4 @@
-﻿namespace patternTest
+﻿namespace SmallHousing
 {
     ///<summary>
     /// <para>Every RhinoCommon .rhp assembly must have one and only one PlugIn-derived
@@ -8,16 +8,16 @@
     /// attributes in AssemblyInfo.cs (you might need to click "Project" ->
     /// "Show All Files" to see it in the "Solution Explorer" window).</para>
     ///</summary>
-    public class patternTestPlugIn : Rhino.PlugIns.PlugIn
+    public class SmallHousingPlugIn : Rhino.PlugIns.PlugIn
 
     {
-        public patternTestPlugIn()
+        public SmallHousingPlugIn()
         {
             Instance = this;
         }
 
         ///<summary>Gets the only instance of the patternTestPlugIn plug-in.</summary>
-        public static patternTestPlugIn Instance
+        public static SmallHousingPlugIn Instance
         {
             get; private set;
         }
